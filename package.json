@@ -1,0 +1,12 @@
+{
+  "name": "nlogs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:nerjs/nlogs.git",
+  "author": "nerjs <karifan.stap@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@nerjs/eslint-config": "^1.0.0",
+    "merge": "^1.2.1"
+  }
+}
