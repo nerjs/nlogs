@@ -5,6 +5,7 @@
   "repository": "git@github.com:nerjs/nlogs.git",
   "author": "nerjs <karifan.stap@gmail.com>",
   "license": "MIT",
+  "typings": "./index.d.ts",
   "dependencies": {
     "@nerjs/eslint-config": "^1.0.0",
     "colors": "^1.4.0",

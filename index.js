@@ -1,8 +1,12 @@
-const Logger = require('./lib/logger')
+const NLogger = require('./lib/logger')
 const Settings = require('./lib/config')
 
-exports = module.exports = (mod, category, settings) => new Logger(mod, category, settings)
+const Logger = (mod, settings) => new NLogger(mod, settings)
 
-exports.getSettings = () => Settings.config
+exports = module.exports = Logger
 
-exports.setSettings = newSettings => Settings.setConfig(newSettings)
+exports.Logger = NLogger
+
+exports.getConfig = () => Settings.config
+
+exports.setConfig = newConfig => Settings.setConfig(newConfig)
