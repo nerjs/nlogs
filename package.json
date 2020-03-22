@@ -7,6 +7,10 @@
   "license": "MIT",
   "dependencies": {
     "@nerjs/eslint-config": "^1.0.0",
-    "merge": "^1.2.1"
+    "colors": "^1.4.0",
+    "find-package": "^1.0.0",
+    "merge": "^1.2.1",
+    "moment": "^2.24.0",
+    "pretty-time": "^1.1.0"
   }
 }
