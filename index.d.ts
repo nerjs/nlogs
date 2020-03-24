@@ -71,14 +71,14 @@ declare namespace Logger {
         first: Style,
 
         /**
-         * @description filename style
-         * @default ['grey', 'dim']
+         * @description path sections (from module dir to filename). Without separator
+         * @default ['cyan', 'italic']
          */
         last: Style,
 
         /**
-         * @description path sections (from module dir to filename). Without separator
-         * @default ['cyan', 'italic']
+         * @description filename style
+         * @default ['grey', 'italic']
          */
         all: Style,
 
@@ -170,6 +170,12 @@ declare namespace Logger {
             /** @description format time labels */
             time: (timestamp: number, short: boolean) => string,
         },
+
+
+        /**
+         * @default true
+         */
+        enableFileLink: boolean;
 
         /**
          * @description if not NULL, each time the indicated timestamp of the log does not match the previous one, an additional message is displayed indicating the full date and time
