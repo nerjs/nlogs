@@ -71,13 +71,13 @@ declare namespace Logger {
         first: Style,
 
         /**
-         * @description path sections (from module dir to filename). Without separator
+         * @description filename style
          * @default ['cyan', 'italic']
          */
         last: Style,
 
         /**
-         * @description filename style
+         * @description path sections (from module dir to filename). Without separator
          * @default ['grey', 'italic']
          */
         all: Style,
@@ -104,20 +104,20 @@ declare namespace Logger {
         label?: Style,
 
         /**
-         * @description Show message when setting timer? Only time method
+         * @description Show message when invoking logger.time()? Only time method
          * @default false
          */
         showStartTimer: boolean,
 
         /**
-         * @description worning if the label exists when invoking logger.time(). Only time method
+         * @description warning if the label exists when invoking logger.time(). Only time method
          * @default true
          */
         warningPresentLabel: boolean,
 
 
         /**
-         * @description worning if the label does not exist when invoking logger.timeEnd(). Only time method
+         * @description warning if the label does not exist when invoking logger.timeEnd(). Only time method
          * @default true
          */
         warningMissingLabel: boolean,
@@ -135,7 +135,7 @@ declare namespace Logger {
         diffTimeColor: Style,
 
         /**
-         * @description depth param to der method
+         * @description depth param to dir method
          * @default 3
          */
         depth: number
@@ -159,10 +159,10 @@ declare namespace Logger {
         /** @description style for default build segments (path & moduleName) label */
         segments: Segments;
 
-        /**
+        /** 
          * @description custom formatters
          */
-        formatter: {
+        formatters: {
 
             /** @description format string labels with styles */
             string: (str: string, styles: Style) => string,
@@ -179,14 +179,14 @@ declare namespace Logger {
 
         /**
          * @description if not NULL, each time the indicated timestamp of the log does not match the previous one, an additional message is displayed indicating the full date and time
-         * @default minute
+         * @default hour
          */
         groupedEveryTime: 'minute' | 'hour' | 'day' | null,
 
         /**
          * @description config for each method
          */
-        methods2: {
+        methods: {
             log: MethodConfig,
             info: MethodConfig,
             debug: MethodConfig,
