@@ -180,3 +180,21 @@ result: `nlogs/lib/file.js`
 ```js
 const { getConfig, setConfig } = require('nlogs')
 ```
+
+### logger.time()
+
+> **logger.time(label)** returns tmeEnd Function
+
+```js
+logger.time('label')
+logger.timeLog('label')
+logger.timeEnd('label')
+```
+
+equivalent:
+
+```js
+const timeEnd = logger.time('label')
+timeEnd.log()
+timeEnd()
+```
