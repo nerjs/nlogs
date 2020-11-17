@@ -14,7 +14,7 @@
   "dependencies": {
     "colors": "^1.4.0",
     "find-package": "^1.0.0",
-    "merge": "^1.2.1",
+    "merge": "^2.1.0",
     "moment": "^2.24.0",
     "pretty-time": "^1.1.0",
     "terminal-link": "^2.1.1"
