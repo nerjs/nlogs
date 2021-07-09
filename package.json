@@ -6,16 +6,21 @@
   "author": "nerjs <karifan.stap@gmail.com>",
   "license": "MIT",
   "typings": "./index.d.ts",
+  "scripts": {
+    "start": "node --es-module-specifier-resolution=node ./index.js"
+  },
   "keywords": [
     "logs",
     "logger",
     "console"
   ],
   "dependencies": {
+    "@nerjs/batchloader": "^1.0.12",
     "colors": "^1.4.0",
     "find-package": "^1.0.0",
     "merge": "^1.2.1",
     "moment": "^2.24.0",
+    "needle": "^2.8.0",
     "pretty-time": "^1.1.0",
     "terminal-link": "^2.1.1"
   },
