@@ -1,25 +1,41 @@
 {
   "name": "nlogs",
-  "version": "1.1.3",
-  "main": "index.js",
+  "version": "2.1.0",
+  "main": "dist/index.js",
   "repository": "git@github.com:nerjs/nlogs.git",
   "author": "nerjs <karifan.stap@gmail.com>",
   "license": "MIT",
-  "typings": "./index.d.ts",
+  "scripts": {
+    "lint": "eslint ./src/*.ts",
+    "clear": "rm -rf ./dist",
+    "build": "tsc --build",
+    "watch": "tsc --watch",
+    "prepublish": "npm run lint && npm run clear && npm run build",
+    "start": "nodemon --enable-source-maps ./dist"
+  },
   "keywords": [
     "logs",
     "logger",
     "console"
   ],
-  "dependencies": {
-    "colors": "^1.4.0",
-    "find-package": "^1.0.0",
-    "merge": "^1.2.1",
-    "moment": "^2.24.0",
-    "pretty-time": "^1.1.0",
-    "terminal-link": "^2.1.1"
-  },
   "devDependencies": {
-    "@nerjs/eslint-config": "^1.0.0"
+    "@typescript-eslint/eslint-plugin": "5.19.0",
+    "@typescript-eslint/parser": "5.19.0",
+    "eslint": "8.13.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "nodemon": "2.0.19",
+    "prettier": "2.6.2",
+    "typescript": "4.6.3"
+  },
+  "dependencies": {
+    "@types/node": "18.7.16",
+    "@types/pretty-time": "1.1.2",
+    "@types/uuid": "8.3.4",
+    "colors": "1.4.0",
+    "lodash.get": "4.4.2",
+    "lodash.set": "4.3.2",
+    "pretty-time": "1.1.0",
+    "uuid": "9.0.0"
   }
 }
