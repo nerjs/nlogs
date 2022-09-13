@@ -1,5 +1,5 @@
-import type { Paths } from './Path'
-import { ClassType } from './types'
+import type { Paths } from './Paths'
+import type { ClassType } from '../utils/types'
 
 export const DEFAULT_CATEGORY = 'default'
 

@@ -1,7 +1,7 @@
-import { getStackTrace } from './stack'
-import { LOGGER_PATHNAME, ROOT_NAME, ROOT } from './package'
-import { ClassType } from './types'
-import { searchPackage } from './file'
+import { getStackTrace } from '../utils/stack'
+import { LOGGER_PATHNAME, ROOT_NAME, ROOT } from '../utils/package'
+import { ClassType } from '../utils/types'
+import { searchPackage } from '../utils/file'
 
 const cache = new Map<string, string>()
 const getModuleName = (pathname: string) => {
