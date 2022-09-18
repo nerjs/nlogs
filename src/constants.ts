@@ -1,13 +1,3 @@
-export const META = {
-  PROJECT: Symbol('Project'),
-  SERVICE: Symbol('Service'),
-  CATEGORY: Symbol('Category'),
-  LEVEL: Symbol('Level'),
-  SUBLEVEL: Symbol('Sub Level'),
-  TRACE_ID: Symbol('TraceID'),
-  DEPTH: Symbol('Depth'),
-  STACKTRACE: Symbol('Stack Trace'),
-  TIME: Symbol('Time'),
-  HIGHLIGHT: Symbol('highlight'),
-  META: Symbol('Meta'),
-}
+export const DEFAULT_PROJECT = 'main'
+export const PROJECT = process.env.NLOGS_PROJECT || process.env.LOGGER_PROJECT || process.env.PROJECT || DEFAULT_PROJECT
+export const SERVICE = process.env.NLOGS_SERVICE || process.env.LOGGER_SERVICE || process.env.SERVICE
