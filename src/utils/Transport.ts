@@ -1,19 +1,26 @@
+import 'colors'
 import { Base } from './Base'
-import { IS_MESSAGE, IS_META, LEVEL } from './symbols'
+import { Parser } from './Parser'
 
 export class Transport extends Base {
+  logToConsole(parser: Parser) {
+    console.log(parser.toDevConsole())
+  }
+
+  logToFile(parser: Parser) {
+    console.log('file'.red, parser)
+  }
+
+  logToElasticsearch(parser: Parser) {
+    console.log('elasticsearch', parser)
+  }
+
   log(...msgs: any[]) {
-    console.log(
-      msgs.map(msg => {
-        if (Base.isMeta(msg) || Base.isMessage(msg)) {
-          delete msg[IS_META]
-          delete msg[IS_MESSAGE]
-          const key = Object.getOwnPropertySymbols(msg)[0]
-          return [key, msg[key]]
-        } else {
-          return msg
-        }
-      }),
-    )
+    const parser = new Parser()
+    parser.parse(msgs)
+
+    if (parser.allowed.console) this.logToConsole(parser.clone())
+    if (parser.allowed.file) this.logToFile(parser.clone())
+    if (parser.allowed.elasticsearch) this.logToElasticsearch(parser.clone())
   }
 }

@@ -47,6 +47,9 @@ export class Logger extends Base {
       Logger.service(this.paths.service),
       Logger.category(this.category.name),
       Logger.timestamp(new Date()),
+      Logger.traceId(this.traceId),
+      Logger.index(this.index.name),
+      ...(this.details ? [this.details] : []),
       ...parseTemplate(msgs),
     )
   }
@@ -110,7 +113,12 @@ export class Logger extends Base {
   }
 
   static getStore<T extends StoreDetails = any>(): LocalStore<T> | undefined {
-    return Object.assign({}, this.store.getStore())
+    const store = this.store.getStore()
+    if (!store) {
+      this.store.enterWith({ traceId: uuid() })
+      return this.getStore()
+    }
+    return Object.assign({}, store)
   }
 
   static getStoreDetails<T extends StoreDetails = any>(): T | undefined {

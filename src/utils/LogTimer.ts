@@ -26,19 +26,6 @@ export class LogTimer {
     this.logger.debug(...[Base.highlight('timeEnd'), this.label, Base.time(time)].filter(Boolean), ...msgs)
     this.onEnd?.(time, this.label)
   }
-
-  static create(logger: ILogger, label?: string | null, onEnd?: (time: number, label?: string | null) => any, ...msgs: any[]): LogTime {
-    const timer = new LogTimer(logger, label, onEnd)
-    timer.start(...msgs)
-
-    const log = (...logMsgs: any[]) => timer.log(...logMsgs)
-    const end = (...endMsgs: any[]) => timer.end(...endMsgs)
-
-    end.log = log
-    end.end = end
-
-    return end
-  }
 }
 
 export class LogTimerManager {
@@ -58,8 +45,14 @@ export class LogTimerManager {
     this.labels.set(timeId, timer)
     timer.start(...msgs)
 
-    const log = (...logMsgs: any[]) => timer.log(...logMsgs)
-    const end = (...endMsgs: any[]) => timer.end(...endMsgs)
+    const log = (...logMsgs: any[]) => {
+      timer.log(...logMsgs)
+      return end
+    }
+    const end = (...endMsgs: any[]) => {
+      timer.end(...endMsgs)
+      return end
+    }
 
     end.log = log
     end.end = end

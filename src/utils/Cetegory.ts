@@ -75,7 +75,7 @@ export class Category {
   }
 
   get allowed() {
-    return Category.allowedSet.size ? Category.allowedSet.has(this) : !this.isModule
+    return Category.allowedSet.size ? Category.allowedSet.has(this) : !this.isModule && process.env.NODE_ENV !== 'production'
   }
 
   static DEFAULT = DEFAULT_CATEGORY

@@ -13,9 +13,9 @@ export interface AllowedSchema {
 }
 
 export type LogTime = {
-  (...msgs: any[]): void
-  log(...msgs: any[]): void
-  end(...msgs: any[]): void
+  (...msgs: any[]): LogTime
+  log(...msgs: any[]): LogTime
+  end(...msgs: any[]): LogTime
 }
 
 export interface StoreDetails extends Record<string, any> {}
