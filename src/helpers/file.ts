@@ -1,4 +1,4 @@
-import { readFileSync, Stats, statSync } from 'fs'
+import { mkdirSync, readFileSync, Stats, statSync } from 'fs'
 import { join } from 'path'
 
 export const HOME = process.env.HOME || '/'
@@ -13,6 +13,16 @@ export const exists = (pathname: string): null | Stats => {
 }
 
 export const existsDir = (dirname: string): boolean => !!exists(dirname)?.isDirectory()
+export const ensureDir = (dirname: string) => {
+  const stat = exists(dirname)
+  if (stat) {
+    if (!stat.isDirectory()) throw new Error(`Pathname ${dirname} is not a directory`)
+    return
+  }
+  mkdirSync(dirname, {
+    recursive: true,
+  })
+}
 export const existsFile = (filename: string): boolean => !!exists(filename)?.isFile()
 
 export const searchFile = (from: string, filename: string): string | null => {

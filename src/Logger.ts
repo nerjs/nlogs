@@ -55,7 +55,15 @@ export class Logger extends Base {
   }
 
   debug(...msgs: any[]) {
-    this.log(Logger.level('debug'), Logger.show(this.category.allowed), ...parseTemplate(msgs))
+    this.log(
+      Logger.level('debug'),
+      Logger.allowed({
+        console: this.category.allowed,
+        file: false,
+        elasticsearch: true,
+      }),
+      ...parseTemplate(msgs),
+    )
   }
 
   info(...msgs: any[]) {

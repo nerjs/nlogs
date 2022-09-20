@@ -34,6 +34,7 @@
     "@types/uuid": "8.3.4",
     "colors": "1.4.0",
     "pretty-time": "1.1.0",
+    "rotating-file-stream": "3.0.4",
     "uuid": "9.0.0"
   }
 }

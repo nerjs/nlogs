@@ -78,8 +78,8 @@ export const COLORS = {
 export class Parser {
   readonly allowed: AllowedSchema = {
     console: true,
-    file: false,
-    elasticsearch: false,
+    file: process.env.NODE_ENV === 'production',
+    elasticsearch: true,
   }
 
   depth: number = 100
@@ -175,7 +175,7 @@ export class Parser {
     const messages = this.messages
       .filter(msg => !Base.isMessage(msg) || !msg[STACKTRACE])
       .map(msg => {
-        if (!Base.isMessage(msg)) return `${msg}`
+        if (!Base.isMessage(msg)) return typeof msg === 'symbol' ? msg.toString() : `${msg}`
         if (msg[TIME] !== undefined) return `[${prettyTime(1000000 * msg[TIME], 'ms')}]`
         if (msg[HIGHLIGHT]) return `[${msg[HIGHLIGHT]}]`
         if (msg[DATETIME]) return msg[DATETIME]?.toJSON()
@@ -257,9 +257,14 @@ export class Parser {
     return [
       this.timestamp.toJSON(),
       '[',
+      // ...(this.meta.project !== DEFAULT_PROJECT ? [this.meta.project] : []),
+      // this.meta.service,
+      // this.meta.category,
+      // this.meta.level.toUpperCase(),
       ...(this.meta.project !== DEFAULT_PROJECT ? [objectToString({ project: this.meta.project })] : []),
-      objectToString({ service: this.meta.service, category: this.meta.category, level: this.meta.level.toUpperCase() }),
+      objectToString({ service: this.meta.service, category: this.meta.category }),
       ']',
+      `[${this.level.toUpperCase()}]`,
       ...messages,
     ].join(' ')
   }

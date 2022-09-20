@@ -1,4 +1,4 @@
-import { PROJECT, SERVICE } from '../constants'
+import { CURRENT_PROJECT, CURRENT_SERVICE } from '../constants'
 import { getPackageName } from '../helpers/file'
 import { LOGGER_PATHNAME, ROOT, ROOT_NAME } from '../helpers/package'
 import { getStackTrace } from '../helpers/stack'
@@ -15,8 +15,8 @@ export type WithConstructor = {
 export type Func = Function | ClassWithConstructor | WithConstructor
 
 export class Paths {
-  readonly project = PROJECT
-  readonly service = SERVICE
+  readonly project = CURRENT_PROJECT
+  readonly service = CURRENT_SERVICE
   readonly root = ROOT
   readonly rootName = ROOT_NAME
   readonly loggerPathname = LOGGER_PATHNAME
