@@ -1,5 +1,5 @@
 import { Base } from './Base'
-import { AllowedSchema } from './types'
+import { AllowedSchema, Meta } from './types'
 import { formatWithOptions } from 'util'
 import {
   ALLOWED,
@@ -22,37 +22,6 @@ import { DEFAULT_CATEGORY } from './Cetegory'
 import { parseStackString } from '../helpers/stack'
 import { objectToString, padTimeItem } from '../helpers/string'
 import prettyTime from 'pretty-time'
-
-/*
-
-export const PROJECT = Symbol('nlogs(meta:project)')
-export const SERVICE = Symbol('nlogs(meta:service)')
-export const CATEGORY = Symbol('nlogs(meta:category)')
-export const LEVEL = Symbol('nlogs(meta:level)')
-export const TIMESTAMP = Symbol('nlogs(meta:timestamp)')
-export const TRACE_ID = Symbol('nlogs(meta:traceId)')
-
-export const DEPTH = Symbol('nlogs(meta:depth)')
-export const INDEX = Symbol('nlogs(meta:index)')
-
-export const ALLOWED = Symbol('nlogs(meta:allowed)')
-export const SHOW = Symbol('nlogs(meta:show)')
-export const WRITE = Symbol('nlogs(meta:write)')
-export const SEND = Symbol('nlogs(meta:send)')
-export const META = Symbol('nlogs(meta:object)')
-
-*/
-
-export type Meta = {
-  project: string
-  service: string
-  category: string
-  level: string
-  traceId: string
-  timestamp: Date
-
-  [key: string]: any
-}
 
 export const META_MAPPING: { key: symbol; field: keyof Meta }[] = [
   { key: PROJECT, field: 'project' },
@@ -151,11 +120,28 @@ export class Parser {
 
   pushMessage(msg: any) {
     this.messages.push(msg)
+    return this
   }
 
   mergeDetails(obj: object) {
     if (!this.details) this.details = {}
     Object.assign(this.details, obj)
+    return this
+  }
+
+  allowedDetails(keys: string[]) {
+    if (!this.details) return this
+    Object.keys(this.details).forEach(key => {
+      if (!keys.includes(key)) {
+        delete this.details[key]
+      }
+    })
+    return this
+  }
+
+  clearDetails() {
+    delete this.details
+    return this
   }
 
   clone() {
@@ -257,10 +243,6 @@ export class Parser {
     return [
       this.timestamp.toJSON(),
       '[',
-      // ...(this.meta.project !== DEFAULT_PROJECT ? [this.meta.project] : []),
-      // this.meta.service,
-      // this.meta.category,
-      // this.meta.level.toUpperCase(),
       ...(this.meta.project !== DEFAULT_PROJECT ? [objectToString({ project: this.meta.project })] : []),
       objectToString({ service: this.meta.service, category: this.meta.category }),
       ']',

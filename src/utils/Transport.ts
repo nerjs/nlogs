@@ -1,25 +1,50 @@
+import BatchLoader from '@nerjs/batchloader'
 import 'colors'
 import { CURRENT_PROJECT, CURRENT_SERVICE } from '../constants'
 import { Base } from './Base'
+import { ElasticsearchTransport } from './ElasticsearchTransport'
+import { PingError, ProxyError } from './errors'
 import { FilesTransport } from './FilesTransport'
 import { Parser } from './Parser'
 
 export class Transport {
   private readonly fileTransport = new FilesTransport(this)
+  private readonly elasticsearchTransport = new ElasticsearchTransport()
+
+  private elasticsearchPingLoader = new BatchLoader(
+    async (arr: PingError[]) => {
+      const maxError = arr.reduce((e, cur) => {
+        if (cur.details._pingTryCount > e.details._pingTryCount) return cur
+        return e
+      }, arr[0])
+
+      this.logToConsole(maxError.toParser())
+
+      return arr
+    },
+    {
+      batchTime: 200,
+      cacheTime: 10,
+      getKey: o => o,
+      maxSize: 1000,
+    },
+  )
 
   constructor() {
     this.fileTransport.on('error', (err: Error) => {
-      this.log(
-        Base.allowed({
-          console: true,
-          file: false,
-          elasticsearch: false,
-        }),
-        Base.project(CURRENT_PROJECT),
-        Base.service(CURRENT_SERVICE),
-        Base.level('error'),
-        err,
-      )
+      const error = ProxyError.from(err)
+      this.logToConsole(error.toParser())
+    })
+
+    this.elasticsearchTransport.on('ping-error', err => this.elasticsearchPingLoader.load(err))
+    this.elasticsearchTransport.on('error', err => {
+      const error = ProxyError.from(err)
+      const parser = error.toParser()
+      if (!process.env.ELASTICSEARCH_DETAILED_REPORT) {
+        if (process.env.NODE_ENV === 'production') parser.allowedDetails(['_error'])
+        else parser.clearDetails()
+      }
+      this.logToConsole(parser)
     })
   }
 
@@ -37,7 +62,7 @@ export class Transport {
   }
 
   logToElasticsearch(parser: Parser) {
-    console.log('elasticsearch'.red, parser.level)
+    this.elasticsearchTransport.send(parser.toElasticsearch())
   }
 
   log(...msgs: any[]) {

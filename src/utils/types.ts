@@ -26,3 +26,26 @@ export type LocalStore<T extends StoreDetails = any> = {
 }
 
 export type PromiseLike<T = any> = T | Promise<T>
+
+export type Meta = {
+  project: string
+  service: string
+  category: string
+  level: string
+  traceId: string
+  timestamp: Date
+
+  [key: string]: any
+}
+
+export interface ElMsg<D extends object = object> {
+  message: string
+  meta: Meta
+  details: D
+}
+
+export interface ElMessage<D extends object = object> extends ElMsg<D> {
+  ['@timestamp']: Date
+}
+
+export type OutElMessage = Pick<ElMessage, 'message' | 'meta'> & Partial<Pick<ElMessage, 'details'>>

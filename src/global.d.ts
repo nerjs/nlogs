@@ -30,5 +30,12 @@ namespace NodeJS {
     FILES_MAX_FILES?: string
     NLOGS_FILES_MAX_FILES?: string
     LOGGER_FILES_MAX_FILES?: string
+    ELASTICSEARCH_CLOUD_ID?: string
+    ELASTICSEARCH_NODE?: string
+    ELASTICSEARCH_NODES?: string
+    ELASTICSEARCH_API_KEY?: string
+    ELASTICSEARCH_USER?: string
+    ELASTICSEARCH_PASSWORD?: string
+    ELASTICSEARCH_DETAILED_REPORT?: string
   }
 }

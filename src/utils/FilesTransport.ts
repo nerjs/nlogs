@@ -15,6 +15,7 @@ import { ensureDir } from '../helpers/file'
 import { padTimeItem } from '../helpers/string'
 import { defaultLogDirectory, LogDirType, ROOT_NAME } from '../helpers/package'
 import { join } from 'path'
+import { ProxyError } from './errors'
 
 export class FilesTransport extends EventEmitter {
   allowedWrite: boolean = false
@@ -30,7 +31,7 @@ export class FilesTransport extends EventEmitter {
   constructor(private readonly transport: Transport) {
     super()
     this.setup()
-    console.log(this)
+    this.setMaxListeners(0)
   }
 
   private setup() {
@@ -71,7 +72,7 @@ export class FilesTransport extends EventEmitter {
       },
     )
     this.fileStream.on('error', err => {
-      this.emit('error', err)
+      this.emit('error', ProxyError.from(err))
     })
   }
 

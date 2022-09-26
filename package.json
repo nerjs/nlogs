@@ -11,7 +11,7 @@
     "build": "tsc --build",
     "watch": "tsc --watch",
     "prepublish": "npm run lint && npm run clear && npm run build",
-    "start": "nodemon --enable-source-maps ./dist"
+    "start": "nodemon --enable-source-maps --trace-warnings ./dist"
   },
   "keywords": [
     "logs",
@@ -29,6 +29,8 @@
     "typescript": "4.6.3"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "8.4.0",
+    "@nerjs/batchloader": "1.0.12",
     "@types/node": "18.7.16",
     "@types/pretty-time": "1.1.2",
     "@types/uuid": "8.3.4",
