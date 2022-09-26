@@ -18,14 +18,13 @@ export type LogTime = {
   end(...msgs: any[]): LogTime
 }
 
-export interface StoreDetails extends Record<string, any> {}
-
-export type LocalStore<T extends StoreDetails = any> = {
+export type LocalStore = {
   traceId: string
-  details?: T
+  meta?: Record<string, any>
+  details?: Record<string, any>
 }
 
-export type PromiseLike<T = any> = T | Promise<T>
+export type MaybePromise<T> = T | PromiseLike<T>
 
 export type Meta = {
   project: string

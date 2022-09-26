@@ -4,7 +4,7 @@ import { ROOT_NAME } from '../helpers/package'
 import { parseStackString } from '../helpers/stack'
 import { Base } from './Base'
 import { Parser } from './Parser'
-import { TraceStore } from './TraceStore'
+import traceStore from './traceStore'
 import { ElMessage, ElMsg } from './types'
 
 export interface NlogsError {
@@ -64,7 +64,7 @@ export class NlogsError extends Error {
         category: this.category,
         level: 'error',
         timestamp: this.timestamp,
-        traceId: TraceStore.traceId,
+        traceId: traceStore.traceId,
         error: this.name,
       },
       details: this.details,
@@ -85,7 +85,7 @@ export class NlogsError extends Error {
         }),
         Base.level('error'),
         Base.timestamp(this.timestamp),
-        Base.traceId(TraceStore.traceId),
+        Base.traceId(traceStore.traceId),
         this.message,
         this.details || {},
       ].filter(Boolean),
