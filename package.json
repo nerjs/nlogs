@@ -14,8 +14,8 @@
     "start": "nodemon --enable-source-maps --trace-warnings ./dist"
   },
   "bin": {
-    "nlogs": "./dist/bin.js log",
-    "nlogs-config": "./dist/bin.js config"
+    "nlogs": "./dist/bin.js",
+    "nlogs-config": "./dist/bin.js"
   },
   "keywords": [
     "logs",
