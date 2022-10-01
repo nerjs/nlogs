@@ -13,6 +13,10 @@
     "prepublish": "npm run lint && npm run clear && npm run build",
     "start": "nodemon --enable-source-maps --trace-warnings ./dist"
   },
+  "bin": {
+    "nlogs": "./dist/bin.js log",
+    "nlogs-config": "./dist/bin.js config"
+  },
   "keywords": [
     "logs",
     "logger",
