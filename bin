@@ -1,17 +1,24 @@
 #!/usr/bin/env node
 
+const { Logger } = require('../nlogs/dist')
 const [,,cmd, ...args] = process.argv
 
+const logger = new Logger('nlogs bin', {
+    allowed: {
+        console: true,
+        elasticsearch: false,
+        file: false
+    }
+})
+
 if (cmd === 'config') {
-    console.log(require('../nlogs/dist/config'))
-} else if (cmd === 'log') {
-    const { Logger } = require('../nlogs/dist')
-    new Logger('.bin').info(...args)
+    logger.dir(require('../nlogs/dist/config'), 10)
+} else if (['log', 'show', 'write', 'send'].includes(cmd)) {
+    logger.info(...args, Logger[['write', 'send'].includes(cmd) ? cmd : 'show'](true))
 } else {
     const fs = require('fs')
     const path = require('path')
     const nlogsDir = path.join(__dirname, '..', 'nlogs', 'package.json')
     const pkg = fs.readFileSync(nlogsDir)
-    const { Logger } = require('../nlogs/dist')
-    new Logger('.bin').info('nlogs version:', pkg.version)
+    logger.info('nlogs version:', pkg.version)
 }
