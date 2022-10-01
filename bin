@@ -11,14 +11,20 @@ const logger = new Logger('nlogs bin', {
     }
 })
 
+logger.category.allow()
+
 if (cmd === 'config') {
     logger.dir(require('../nlogs/dist/config'), 10)
 } else if (['log', 'show', 'write', 'send'].includes(cmd)) {
-    logger.info(...args, Logger[['write', 'send'].includes(cmd) ? cmd : 'show'](true))
+    logger.debug(...args, Logger.allowed({
+        console: true,
+        file: cmd.includes('write'),
+        elasticsearch: cmd.includes('send')
+    }))
 } else {
     const fs = require('fs')
     const path = require('path')
     const nlogsDir = path.join(__dirname, '..', 'nlogs', 'package.json')
-    const pkg = fs.readFileSync(nlogsDir)
-    logger.info('nlogs version:', pkg.version)
+    const pkg = fs.readFileSync(nlogsDir, 'utf-8')
+    logger.info('nlogs version:', Logger.highlight(pkg.version))
 }
