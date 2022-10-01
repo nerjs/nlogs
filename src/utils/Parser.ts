@@ -17,11 +17,11 @@ import {
   TIMESTAMP,
   TRACE_ID,
 } from './symbols'
-import { DEFAULT_PROJECT } from '../constants'
-import { DEFAULT_CATEGORY } from './Cetegory'
+import { DEFAULT_PROJECT } from '../config/constants'
 import { parseStackString } from '../helpers/stack'
 import { objectToString, padTimeItem } from '../helpers/string'
 import prettyTime from 'pretty-time'
+import { config } from '../config'
 
 export const META_MAPPING: { key: symbol; field: keyof Meta }[] = [
   { key: PROJECT, field: 'project' },
@@ -55,9 +55,9 @@ export class Parser {
   index: string = 'nlogs-empty'
 
   meta: Meta = {
-    project: DEFAULT_PROJECT,
-    service: '',
-    category: DEFAULT_CATEGORY,
+    project: config.main.project,
+    service: config.main.service,
+    category: config.main.category.default,
     level: 'debug',
     traceId: '',
     timestamp: new Date(),

@@ -19,6 +19,7 @@ export interface MainConfig {
   }
   logger: {
     version: string
+    pathname: string
   }
 }
 

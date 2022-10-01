@@ -1,6 +1,5 @@
+import { config } from '../config'
 import { Func, Paths } from './Paths'
-
-export const DEFAULT_CATEGORY = 'default'
 
 const allowedDebug: { module: string; category?: string }[] = [
   process.env.DEBUG,
@@ -43,8 +42,12 @@ export class Category {
     }
 
     if (!this.category) this.category = paths.resolved
-    if (!this.category) this.category = DEFAULT_CATEGORY
-    this.name = paths.isModule ? (this.category === DEFAULT_CATEGORY ? paths.name : `${paths.name}:${this.category}`) : this.category
+    if (!this.category) this.category = config.main.category.default
+    this.name = paths.isModule
+      ? this.category === config.main.category.default
+        ? paths.name
+        : `${paths.name}:${this.category}`
+      : this.category
     this.isModule = paths.isModule
 
     if (
@@ -52,7 +55,7 @@ export class Category {
         !(allowedDebug.length === 1 && allowedDebug.length === 1 && allowedDebug[0].module === '@' && !allowedDebug[0].category)) &&
       allowedDebug.find(({ module, category }) => {
         if (paths.isModule) return module === paths.name && (!category || category === this.category)
-        return (!module || module === '@' || module === paths.rootName) && (!category || category === this.category)
+        return (!module || module === '@' || module === config.main.root.name) && (!category || category === this.category)
       })
     ) {
       this.allow()
@@ -78,6 +81,5 @@ export class Category {
     return Category.allowedSet.size ? Category.allowedSet.has(this) : !this.isModule && process.env.NODE_ENV !== 'production'
   }
 
-  static DEFAULT = DEFAULT_CATEGORY
   static allowedSet = new Set<any>()
 }

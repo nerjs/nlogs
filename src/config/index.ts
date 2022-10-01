@@ -16,7 +16,7 @@ import {
   SYSTEM_CATEGORY,
 } from './constants'
 import { cfg, ENV } from './createCfg'
-import { LOGGER_VERSION, ROOT, ROOT_NAME, ROOT_VERSION } from './rootInfo'
+import { LOGGER_PATHNAME, LOGGER_VERSION, ROOT, ROOT_NAME, ROOT_VERSION } from './rootInfo'
 import { Config } from './types'
 
 const config: Config = {
@@ -34,6 +34,7 @@ const config: Config = {
     },
     logger: {
       version: LOGGER_VERSION,
+      pathname: LOGGER_PATHNAME,
     },
     root: {
       name: ROOT_NAME,

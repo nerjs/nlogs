@@ -1,6 +1,5 @@
-import { CURRENT_PROJECT, CURRENT_SERVICE } from '../constants'
+import { config } from '../config'
 import { getPackageName } from '../helpers/file'
-import { LOGGER_PATHNAME, ROOT, ROOT_NAME } from '../helpers/package'
 import { getStackTrace } from '../helpers/stack'
 
 export interface ClassWithConstructor {
@@ -15,11 +14,8 @@ export type WithConstructor = {
 export type Func = Function | ClassWithConstructor | WithConstructor
 
 export class Paths {
-  readonly project = CURRENT_PROJECT
-  readonly service = CURRENT_SERVICE
-  readonly root = ROOT
-  readonly rootName = ROOT_NAME
-  readonly loggerPathname = LOGGER_PATHNAME
+  readonly project = config.main.project
+  readonly service = config.main.service
   readonly pathname: string
   readonly name: string
   readonly resolved: string
@@ -29,28 +25,26 @@ export class Paths {
     this.pathname = this.pathname?.replace(/((\/index)?\.(j|t)sx?)$/, '') || '..'
 
     const matched = this.pathname.match(/node_modules\/(@[a-z0-9-_]+\/)?([a-z0-9-_]+)/g)
-    this.isModule = !this.pathname.includes(ROOT) || !!matched
+    this.isModule = !this.pathname.includes(config.main.root.pathname) || !!matched
 
     if (matched?.length) {
       this.name = matched[matched.length - 1].replace(/^node_modules\//, '')
-    } else if (this.pathname.includes(ROOT)) {
-      this.name = this.rootName
+    } else if (this.pathname.includes(config.main.root.pathname)) {
+      this.name = config.main.root.name
     } else {
       this.name = getPackageName(this.pathname)
     }
 
-    if (this.pathname.includes(this.loggerPathname)) {
-      this.resolved = this.pathname.replace(`${this.loggerPathname}/`, '')
+    if (this.pathname.includes(config.main.logger.pathname)) {
+      this.resolved = this.pathname.replace(`${config.main.logger.pathname}/`, '')
     } else if (this.isModule) {
       this.resolved = this.pathname.match(new RegExp(`/node_modules/${this.name}/(.*)`))?.[1]
-    } else if (this.pathname.includes(ROOT)) {
-      this.resolved = this.pathname.match(new RegExp(`^${ROOT}/(.*)`))?.[1]
+    } else if (this.pathname.includes(config.main.root.pathname)) {
+      this.resolved = this.pathname.match(new RegExp(`^${config.main.root.pathname}/(.*)`))?.[1]
     }
 
     this.resolved = this.resolved?.replace(/^(dist|src)\/?/, '')
     if (!this.resolved) this.resolved = ''
-
-    if (!this.service) this.service = this.rootName
 
     Object.freeze(this)
   }

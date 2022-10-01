@@ -1,6 +1,5 @@
 import { BulkResponseItem } from '@elastic/elasticsearch/lib/api/types'
-import { CURRENT_PROJECT, CURRENT_SERVICE } from '../constants'
-import { ROOT_NAME } from '../helpers/package'
+import { config } from '../config'
 import { parseStackString } from '../helpers/stack'
 import { Base } from './Base'
 import { Parser } from './Parser'
@@ -36,7 +35,7 @@ export class NlogsError extends Error {
     return this.name
   }
 
-  private getDetails() {
+  protected getDetails() {
     const details = Object.assign({}, this.privateDetails)
     const parsedStack = parseStackString(this.stack)
     if (!details.stack && !details.stacks) {
@@ -56,11 +55,12 @@ export class NlogsError extends Error {
   }
 
   toJSON(): ElMessage<this['details']> {
+    const { project, service } = config.main
     return {
       message: `${this.name}: ${this.message}`,
       meta: {
-        project: CURRENT_PROJECT,
-        service: CURRENT_SERVICE || ROOT_NAME,
+        project,
+        service,
         category: this.category,
         level: 'error',
         timestamp: this.timestamp,
@@ -73,12 +73,13 @@ export class NlogsError extends Error {
   }
 
   toParser(): Parser {
+    const { project, service } = config.main
     const parser = new Parser()
 
     parser.parse(
       [
-        Base.project(CURRENT_PROJECT),
-        Base.service(CURRENT_SERVICE || ROOT_NAME),
+        Base.project(project),
+        Base.service(service),
         Base.category(this.category),
         Base.meta({
           error: this.name,

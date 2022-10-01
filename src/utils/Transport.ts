@@ -1,14 +1,12 @@
 import BatchLoader from '@nerjs/batchloader'
 import 'colors'
-import { CURRENT_PROJECT, CURRENT_SERVICE } from '../constants'
-import { Base } from './Base'
 import { ElasticsearchTransport } from './ElasticsearchTransport'
 import { PingError, ProxyError } from './errors'
 import { FilesTransport } from './FilesTransport'
 import { Parser } from './Parser'
 
 export class Transport {
-  private readonly fileTransport = new FilesTransport(this)
+  private readonly fileTransport = new FilesTransport()
   private readonly elasticsearchTransport = new ElasticsearchTransport()
 
   private elasticsearchPingLoader = new BatchLoader(

@@ -1,13 +1,13 @@
 import { Base } from './utils/Base'
 import { Transport } from './utils/Transport'
 import { Cat, Category } from './utils/Cetegory'
-import { Index } from './utils/Index'
 import { Paths } from './utils/Paths'
 import { LocalStore, LogTime, MaybePromise } from './utils/types'
 import { LogTimerManager } from './utils/LogTimer'
 import { getStackTrace } from './helpers/stack'
 import { parseTemplate } from './helpers/template'
 import traceStore from './utils/traceStore'
+import { config } from './config'
 
 export interface LoggerOptions {
   index:
@@ -31,18 +31,16 @@ export const defaultTransport = new Transport()
 export class Logger extends Base {
   readonly paths: Paths
   readonly category: Category
-  readonly index: Index
   readonly timers = new LogTimerManager(this)
   readonly transport = defaultTransport
   readonly traceStore = traceStore
 
-  constructor(cat?: Cat, readonly options?: LoggerOptions) {
+  constructor(cat?: Cat, private readonly options?: LoggerOptions) {
     super()
     this.paths = new Paths(this)
     this.category = new Category(this.paths, cat)
-    this.index = new Index(this.paths, this.category)
 
-    if (options?.category?.allow) this.category.allow()
+    if (this.options?.category?.allow) this.category.allow()
   }
 
   log(...msgs: any[]) {
@@ -54,7 +52,7 @@ export class Logger extends Base {
       Logger.category(this.category.name),
       Logger.timestamp(new Date()),
       Logger.traceId(this.traceId),
-      Logger.index(this.index.name),
+      Logger.index(config.main.index.logs),
       ...(traceStore.details ? [traceStore.details] : []),
       ...parseTemplate(msgs),
     )
