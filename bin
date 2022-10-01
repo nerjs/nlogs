@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+const [,,cmd, ...args] = process.argv
+
+if (cmd === 'config') {
+    console.log(require('../nlogs/dist/config'))
+} else if (cmd === 'log') {
+    const { Logger } = require('../nlogs/dist')
+    new Logger('.bin').info(...args)
+} else {
+    const fs = require('fs')
+    const path = require('path')
+    const nlogsDir = path.join(__dirname, '..', 'nlogs', 'package.json')
+    const pkg = fs.readFileSync(nlogsDir)
+    const { Logger } = require('../nlogs/dist')
+    new Logger('.bin').info('nlogs version:', pkg.version)
+}
