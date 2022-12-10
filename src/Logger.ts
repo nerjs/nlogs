@@ -1,5 +1,5 @@
 import { Base } from './utils/Base'
-import { Transport } from './utils/Transport'
+import { TransportManager } from './utils/TransportManager'
 import { Cat, Category } from './utils/Cetegory'
 import { Paths } from './utils/Paths'
 import { LocalStore, LogTime, MaybePromise } from './utils/types'
@@ -26,7 +26,7 @@ export interface LoggerOptions {
   }
 }
 
-export const defaultTransport = new Transport()
+export const defaultTransport = new TransportManager()
 
 export class Logger extends Base {
   readonly paths: Paths
@@ -53,6 +53,7 @@ export class Logger extends Base {
       Logger.timestamp(new Date()),
       Logger.traceId(this.traceId),
       Logger.index(config.main.index.logs),
+      ...(this.paths.isModule ? [Logger.module(this.paths.name)] : []),
       ...(traceStore.details ? [traceStore.details] : []),
       ...parseTemplate(msgs),
     )

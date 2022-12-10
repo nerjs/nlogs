@@ -9,6 +9,7 @@ import {
   IS_META,
   LEVEL,
   META,
+  MODULE,
   PROJECT,
   SERVICE,
   STACKTRACE,
@@ -88,6 +89,10 @@ export class Base {
 
   static index(index: string) {
     return this.toMeta(INDEX, index)
+  }
+
+  static module(module: string) {
+    return this.toMeta(MODULE, module)
   }
 
   static meta(meta: Record<string, string | number>) {

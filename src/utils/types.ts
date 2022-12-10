@@ -33,6 +33,7 @@ export type Meta = {
   level: string
   traceId: string
   timestamp: Date
+  module?: string
 
   [key: string]: any
 }

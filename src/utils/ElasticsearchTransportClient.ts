@@ -1,10 +1,11 @@
-import { Client, ClientOptions, HttpConnection, UndiciConnection } from '@elastic/elasticsearch'
+import { Client, HttpConnection } from '@elastic/elasticsearch'
 import { BulkOperationType, BulkResponse, BulkResponseItem } from '@elastic/elasticsearch/lib/api/types'
-import { HttpAgentOptions, UndiciAgentOptions } from '@elastic/transport/lib/types'
+import { HttpAgentOptions } from '@elastic/transport/lib/types'
 import BatchLoader from '@nerjs/batchloader'
 import EventEmitter from 'events'
-import { BulkErrorResponse, ElasticsearchBulkError, ElasticsearchHttpError, NotInitializedError } from './errors'
+import { BulkErrorResponse, ElasticsearchBulkError, ElasticsearchHttpError, ProxyError } from './errors'
 import { ElMessage } from './types'
+import { ElasticseaarchConfig } from '../config/types'
 
 interface BulkMessage<T extends BulkOperationType = BulkOperationType> {
   index: string
@@ -13,17 +14,11 @@ interface BulkMessage<T extends BulkOperationType = BulkOperationType> {
   data: any
 }
 
-export class ElasticsearchTransportClient {
-  successedLastResult = true
-  private elasticsearchClient?: Client
-  get client(): Client | null {
-    if ('elasticsearchClient' in this) return this.elasticsearchClient
-    const options: ClientOptions = ElasticsearchTransportClient.getBaseOptions()
-    if (!options) {
-      this.elasticsearchClient = null
-      return null
-    }
+export class ElasticsearchTransportClient extends EventEmitter {
+  readonly client: Client
 
+  constructor(readonly config: ElasticseaarchConfig) {
+    super()
     const agent: HttpAgentOptions = {
       keepAlive: true,
       keepAliveMsecs: 10000,
@@ -32,30 +27,20 @@ export class ElasticsearchTransportClient {
       // connections: 1000,
     }
 
-    this.elasticsearchClient = new Client({
-      ...options,
-      sniffOnStart: false,
-      sniffInterval: false,
-      Connection: HttpConnection,
-      agent,
-      // agent: ElasticsearchTransportClient.getAgent(options),
-    })
-
-    return this.elasticsearchClient
+    try {
+      this.client = new Client({
+        ...this.config,
+        sniffOnStart: false,
+        sniffInterval: false,
+        Connection: HttpConnection,
+        agent,
+      })
+    } catch (err) {
+      this.emit('error', new ProxyError(err, 'Something went wrong when configuring the elasticsearch client'))
+    }
   }
-
-  get wasInitialized() {
-    return 'elasticsearchClient' in this
-  }
-
-  get ready() {
-    return !!this.client
-  }
-
-  constructor(private readonly parent: EventEmitter) {}
 
   async bulk(operations: BulkMessage[]): Promise<BulkResponse> {
-    if (!this.client) throw new NotInitializedError('elasticsearch', 'bulk')
     return await this.client.bulk({
       operations: operations
         .map(({ index, type, data, id }) => [
@@ -69,14 +54,8 @@ export class ElasticsearchTransportClient {
   }
 
   private bulkBatchLoaderFn = async (arr: BulkMessage[]) => {
-    try {
-      const response = await this.bulk(arr)
-      this.successedLastResult = true
-      return response.items
-    } catch (err) {
-      this.successedLastResult = false
-      throw err
-    }
+    const response = await this.bulk(arr)
+    return response.items
   }
 
   private readonly bulkLoader = new BatchLoader(this.bulkBatchLoaderFn, {
@@ -109,10 +88,8 @@ export class ElasticsearchTransportClient {
 
     try {
       res = await this.client.ping()
-      this.successedLastResult = true
     } catch (err) {
-      this.successedLastResult = false
-      this.parent.emit('ping-error', new ElasticsearchHttpError(err))
+      this.emit('error', new ElasticsearchHttpError(err))
       res = false
     }
     return Array(arr.length).fill(!!res)
@@ -128,35 +105,5 @@ export class ElasticsearchTransportClient {
   async ping() {
     if (!this.client) return false
     return this.pingLoader.load(Date.now())
-  }
-
-  static getBaseOptions(): Pick<ClientOptions, 'auth' | 'cloud' | 'node' | 'nodes'> | null {
-    const {
-      ELASTICSEARCH_API_KEY,
-      ELASTICSEARCH_CLOUD_ID,
-      ELASTICSEARCH_NODE,
-      ELASTICSEARCH_NODES,
-      ELASTICSEARCH_USER,
-      ELASTICSEARCH_PASSWORD,
-    } = process.env
-
-    const options: Pick<ClientOptions, 'auth' | 'cloud' | 'node' | 'nodes'> = {}
-
-    if (ELASTICSEARCH_CLOUD_ID) options.cloud = { id: ELASTICSEARCH_CLOUD_ID }
-    if (ELASTICSEARCH_NODE && !options.cloud) options.node = ELASTICSEARCH_NODE
-    if (ELASTICSEARCH_NODES && !options.cloud && !options.node) options.nodes = ELASTICSEARCH_NODES
-
-    if (ELASTICSEARCH_API_KEY) options.auth = { apiKey: ELASTICSEARCH_API_KEY }
-    if ((ELASTICSEARCH_USER || ELASTICSEARCH_PASSWORD) && !options.auth)
-      options.auth = {
-        username: ELASTICSEARCH_USER,
-        password: ELASTICSEARCH_PASSWORD,
-      }
-
-    return Object.keys(options).length ? options : null
-  }
-
-  static getAgent(_options: ClientOptions) {
-    return undefined
   }
 }

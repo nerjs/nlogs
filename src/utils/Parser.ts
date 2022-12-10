@@ -10,6 +10,7 @@ import {
   INDEX,
   LEVEL,
   META,
+  MODULE,
   PROJECT,
   SERVICE,
   STACKTRACE,
@@ -30,6 +31,7 @@ export const META_MAPPING: { key: symbol; field: keyof Meta }[] = [
   { key: LEVEL, field: 'level' },
   { key: TRACE_ID, field: 'traceId' },
   { key: TIMESTAMP, field: 'timestamp' },
+  { key: MODULE, field: 'module' },
 ]
 
 export const META_ROOT_MAPPING: { key: symbol; field: keyof Meta }[] = [
@@ -47,12 +49,12 @@ export const COLORS = {
 export class Parser {
   readonly allowed: AllowedSchema = {
     console: true,
-    file: process.env.NODE_ENV === 'production',
+    file: true,
     elasticsearch: true,
   }
 
   depth: number = 100
-  index: string = 'nlogs-empty'
+  index: string = config.main.index.logs
 
   meta: Meta = {
     project: config.main.project,
@@ -66,7 +68,7 @@ export class Parser {
   details: object
 
   get level() {
-    return this.meta.level
+    return this.meta.level.toUpperCase()
   }
 
   get timestamp() {

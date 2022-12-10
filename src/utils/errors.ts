@@ -8,8 +8,12 @@ import { ElMessage, ElMsg } from './types'
 
 export interface NlogsError {
   readonly details: {
-    stack?: string[]
-    stacks?: string[][]
+    _stack?: string[]
+    _stacks?: string[][]
+    _target?: {
+      index?: string
+      data?: any
+    }
 
     [key: string]: any
   }
@@ -35,41 +39,31 @@ export class NlogsError extends Error {
     return this.name
   }
 
+  setTarget(index: string, data: any, rewrite?: boolean) {
+    if (this.privateDetails._target && !rewrite) return this
+    this.privateDetails._target = {
+      index,
+      data,
+    }
+  }
+
   protected getDetails() {
     const details = Object.assign({}, this.privateDetails)
     const parsedStack = parseStackString(this.stack)
-    if (!details.stack && !details.stacks) {
-      details.stack = parsedStack
-    } else if (details.stack) {
-      if (!details.stacks) details.stacks = []
-      details.stacks.push(details.stack, parsedStack)
-      delete details.stack
-    } else if (details.stacks) {
-      details.stacks.push(parsedStack)
+    if (!details._stack && !details._stacks) {
+      details._stack = parsedStack
+    } else if (details._stack) {
+      if (!details._stacks) details._stacks = []
+      details._stacks.push(details._stack, parsedStack)
+      delete details._stack
+    } else if (details._stacks) {
+      details._stacks.push(parsedStack)
     }
     return details
   }
 
   protected setDetails(...obj: (object | null | undefined)[]) {
     Object.assign(this.privateDetails, ...obj)
-  }
-
-  toJSON(): ElMessage<this['details']> {
-    const { project, service } = config.main
-    return {
-      message: `${this.name}: ${this.message}`,
-      meta: {
-        project,
-        service,
-        category: this.category,
-        level: 'error',
-        timestamp: this.timestamp,
-        traceId: traceStore.traceId,
-        error: this.name,
-      },
-      details: this.details,
-      ['@timestamp']: this.timestamp,
-    }
   }
 
   toParser(): Parser {
@@ -87,6 +81,7 @@ export class NlogsError extends Error {
         Base.level('error'),
         Base.timestamp(this.timestamp),
         Base.traceId(traceStore.traceId),
+        Base.index(config.main.index.system),
         this.message,
         this.details || {},
       ].filter(Boolean),
@@ -139,7 +134,7 @@ export interface PingError extends NlogsError {
 }
 export class PingError extends NlogsError {
   constructor(pingTryCount: number = 1) {
-    super(`Пинг завершился неудачей. Попытка ${pingTryCount}`)
+    super(`The ping ended in failure. Attempt ${pingTryCount}`)
     this.setDetails({ _pingTryCount: pingTryCount })
   }
 }
@@ -164,14 +159,7 @@ export class NotInitializedError extends NlogsError {
   }
 }
 
-export interface ElasticsearchHttpError extends ProxyError {
-  details: ProxyError['details'] & {
-    _target?: {
-      index?: string
-      data?: any
-    }
-  }
-}
+export interface ElasticsearchHttpError extends ProxyError {}
 export class ElasticsearchHttpError extends ProxyError {
   constructor(originalError: Error, index?: string, data?: any) {
     super(originalError)

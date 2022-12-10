@@ -1,4 +1,3 @@
-import EventEmitter from 'events'
 import { DEFAULT_PROJECT } from '../config/constants'
 import { createStream, RotatingFileStream } from 'rotating-file-stream'
 import { ensureDir } from '../helpers/file'
@@ -6,8 +5,12 @@ import { padTimeItem } from '../helpers/string'
 import { join } from 'path'
 import { ProxyError } from './errors'
 import { config } from '../config'
+import { Transport } from './Transport'
+import type { FileConfig } from '../config/types'
+import { Parser } from './Parser'
 
-export class FilesTransport extends EventEmitter {
+export class FilesTransport extends Transport<FileConfig> {
+  private stream: RotatingFileStream
   readonly startFolder = [
     'nlogs',
     [config.main.project !== DEFAULT_PROJECT && config.main.project, config.main.service]
@@ -16,15 +19,10 @@ export class FilesTransport extends EventEmitter {
       .join('_'),
   ].join('/')
 
-  constructor() {
-    super()
-    this.setMaxListeners(0)
-  }
-
-  private createStream() {
-    if (!config.file.allowed) return
-    ensureDir(config.file.config.path)
-    this.fileStream = createStream(
+  init() {
+    const { format, path, ...streamConfig } = this.config.config
+    ensureDir(path)
+    this.stream = createStream(
       (time: Date, index: number) => {
         if (!time) return 'nlogs.log'
         const folder = `${time.getFullYear()}-${padTimeItem(time.getMonth(), 'm')}-${padTimeItem(time.getDate(), 'd')}`
@@ -32,26 +30,35 @@ export class FilesTransport extends EventEmitter {
         return `${folder}/${name}-${config.main.root.name}.log.gz`
       },
       {
-        ...config.file.config,
-        path: join(config.file.config.path, this.startFolder),
+        ...streamConfig,
+        path: join(path, this.startFolder),
       },
     )
-    this.fileStream.on('error', err => {
+    this.stream.on('error', err => {
       this.emit('error', ProxyError.from(err))
     })
   }
 
-  private fileStream: RotatingFileStream
-  get stream(): RotatingFileStream | null {
-    if (!config.file.allowed) return null
-    if (!this.fileStream) this.createStream()
-
-    return this.fileStream
+  private parsetToLine(parser: Parser) {
+    return FilesTransport.toTextLine(parser, true)
   }
 
-  write(line: string) {
-    if (!this.stream) return
-    this.stream.write(line)
-    this.stream.write('\n')
+  private parsetToJSON(parser: Parser) {
+    return FilesTransport.toJsonLine(parser, true)
+  }
+
+  #count = 0
+  count() {
+    return this.#count
+  }
+
+  logTo(parser: Parser): boolean {
+    if (!this.stream) return false
+    const { format } = this.config.config
+    const message = format === 'json' ? this.parsetToJSON(parser) : this.parsetToLine(parser)
+    this.#count++
+    return this.stream.write(`${message}\n`, () => {
+      this.#count--
+    })
   }
 }

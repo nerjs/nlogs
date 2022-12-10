@@ -31,11 +31,11 @@ export interface DebugConfig {
 }
 
 export interface ConsoleConfig {
-  levels: string[]
   format: 'full' | 'simple' | 'json'
 }
 
 export interface FileConfig {
+  format: 'line' | 'json'
   compress: boolean
   history: string
   path: string

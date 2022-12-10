@@ -1,73 +1,127 @@
-import BatchLoader from '@nerjs/batchloader'
-import 'colors'
-import { ElasticsearchTransport } from './ElasticsearchTransport'
-import { PingError, ProxyError } from './errors'
-import { FilesTransport } from './FilesTransport'
+import EventEmitter from 'events'
+import prettyTime from 'pretty-time'
+import { DEFAULT_PROJECT } from '../config/constants'
+import type { TransportConfig } from '../config/types'
+import { objectToString } from '../helpers/string'
+import { Base } from './Base'
+import { ProxyError } from './errors'
 import { Parser } from './Parser'
+import { DATETIME, HIGHLIGHT, STACKTRACE, TIME } from './symbols'
+import { MaybePromise } from './types'
 
-export class Transport {
-  private readonly fileTransport = new FilesTransport()
-  private readonly elasticsearchTransport = new ElasticsearchTransport()
-
-  private elasticsearchPingLoader = new BatchLoader(
-    async (arr: PingError[]) => {
-      const maxError = arr.reduce((e, cur) => {
-        if (cur.details._pingTryCount > e.details._pingTryCount) return cur
-        return e
-      }, arr[0])
-
-      this.logToConsole(maxError.toParser())
-
-      return arr
-    },
-    {
-      batchTime: 200,
-      cacheTime: 10,
-      getKey: o => o,
-      maxSize: 1000,
-    },
-  )
-
-  constructor() {
-    this.fileTransport.on('error', (err: Error) => {
-      const error = ProxyError.from(err)
-      this.logToConsole(error.toParser())
-    })
-
-    this.elasticsearchTransport.on('ping-error', err => this.elasticsearchPingLoader.load(err))
-    this.elasticsearchTransport.on('error', err => {
-      const error = ProxyError.from(err)
-      const parser = error.toParser()
-      if (!process.env.ELASTICSEARCH_DETAILED_REPORT) {
-        if (process.env.NODE_ENV === 'production') parser.allowedDetails(['_error'])
-        else parser.clearDetails()
-      }
-      this.logToConsole(parser)
-    })
+export abstract class Transport<C> extends EventEmitter {
+  constructor(readonly config: TransportConfig<C>) {
+    super()
   }
 
-  logToConsole(parser: Parser) {
-    const method = ['warn', 'error'].includes(parser.level.toLowerCase()) ? parser.level.toLowerCase() : 'log'
-    if (process.env.NODE_ENV === 'production') {
-      console[method](parser.toConsole())
-    } else {
-      console[method](parser.toDevConsole())
+  abstract logTo(parser: Parser): MaybePromise<boolean>
+  abstract count(): number
+
+  get allowed() {
+    return this.config.allowed
+  }
+
+  async log(parser: Parser): Promise<boolean> {
+    if (!this.config.allowed) return false
+    if (parser.meta.level === 'debug') {
+      const { allowed, only, categories, modules } = this.config.debug
+      if (!allowed) return false
+      if (only) {
+        if (modules.length && parser.meta.module && !modules.includes(parser.meta.module)) return false
+        if (categories.length && !categories.includes(parser.meta.category)) return false
+      }
+    }
+    return this.wrapLogTo(parser)
+  }
+
+  protected init() {}
+
+  #inited = false
+  private async wrapLogTo(parser) {
+    try {
+      if (!this.#inited) {
+        await this.init()
+        this.#inited = true
+      }
+      return await this.logTo(parser)
+    } catch (err) {
+      const error = ProxyError.from(err)
+      this.emit('error', error, parser)
+      return false
     }
   }
 
-  logToFile(parser: Parser) {
-    this.fileTransport.write(parser.toFile())
+  static toJsonLine(parser: Parser, addTraceId?: boolean): string {
+    const message = this.toTextMessages(parser.messages)
+    const { level, timestamp, traceId, ...meta } = parser.meta
+
+    return JSON.stringify({
+      timestamp: parser.timestamp,
+      level: parser.level,
+      message,
+      meta,
+      details: parser.details,
+      traceId: addTraceId && traceId ? traceId : undefined,
+    })
   }
 
-  logToElasticsearch(parser: Parser) {
-    this.elasticsearchTransport.send(parser.toElasticsearch())
+  static toTextLine(parser: Parser, addTraceId?: boolean): string {
+    const message = this.toTextMessages(parser.messages)
+    const timestamp = this.toTextDateTime(parser.timestamp)
+    const meta = objectToString(
+      Object.assign(
+        {},
+        parser.meta.project !== DEFAULT_PROJECT && { project: parser.meta.project },
+        parser.meta.module && { module: parser.meta.module },
+        {
+          service: parser.meta.service,
+          category: parser.meta.category,
+        },
+      ),
+    )
+
+    const row = [timestamp, `[ ${meta} ]`, `[${parser.level.toUpperCase()}]`]
+    if (message.length) row.push(objectToString({ message }))
+    if (parser.details) row.push(`details=${JSON.stringify(parser.details)}`)
+    if (addTraceId && parser.meta.traceId) row.push(`traceId=${parser.meta.traceId}`)
+
+    return row.join(' ')
   }
 
-  log(...msgs: any[]) {
-    const parser = new Parser()
-    parser.parse(msgs)
-    if (parser.allowed.console) this.logToConsole(parser.clone())
-    if (parser.allowed.file) this.logToFile(parser.clone())
-    if (parser.allowed.elasticsearch) this.logToElasticsearch(parser.clone())
+  static toTextMessages(messages: any[]): string {
+    return this.toArrayMessages(messages, false).join(' ').trim()
+  }
+
+  static toArrayMessages<K extends boolean>(messages: any[], keepPrimitives?: K): K extends true ? any[] : string[] {
+    return messages.filter(msg => !Base.isMessage(msg) || !msg[STACKTRACE]).map(msg => this.toValueMsg(msg, keepPrimitives))
+  }
+
+  static toValueMsg<K extends boolean>(msg: any, keepPrimitives?: K): K extends true ? any : string {
+    if (!Base.isMessage(msg)) return this.toValue(msg, keepPrimitives)
+    if (msg[TIME] !== undefined) return this.toTextTime(this.toPrettyTime(msg[TIME]))
+    if (msg[HIGHLIGHT]) return this.toTextHighlight(`${msg[HIGHLIGHT]}`)
+    if (msg[DATETIME]) return this.toTextDateTime(msg[DATETIME])
+    return ''
+  }
+
+  static toValue(value: any, keepPrimitives?: boolean) {
+    if (typeof value === 'symbol') return value.toString()
+    return keepPrimitives ? value : `${value}`
+  }
+
+  static toPrettyTime(time: number) {
+    return prettyTime(1000000 * time, 'ms')
+  }
+
+  static toTextTime(time: string) {
+    return `[${time}]`
+  }
+
+  static toTextHighlight(text: string) {
+    return `[${text}]`
+  }
+
+  static toTextDateTime(datetime: Date) {
+    return datetime?.toJSON()
   }
 }

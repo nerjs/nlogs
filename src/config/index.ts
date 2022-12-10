@@ -51,7 +51,6 @@ const config: Config = {
           : ENV === 'development'
           ? 'full'
           : 'simple',
-      levels: ['log', 'debug', 'info', 'warn', 'error'],
     },
     debug: {
       allowed: ENV === 'development',
@@ -69,6 +68,7 @@ const config: Config = {
       modules: [],
     },
     config: {
+      format: cfg.FILE_FORMAT || 'line',
       compress: true,
       history: LOGFILE_HISTORY_NAME,
       maxFiles: +cfg.FILE_MAX_FILES || LOGFILE_MAX_FILES,

@@ -11,7 +11,7 @@ export const hasDockerEnv = () => existsFile(ENV)
 export const hasProc = () => existsFile(PROC) && readFileSync(PROC, 'utf-8').includes('docker')
 export const existsSecrets = () => existsDir(SECRETS)
 
-export const APP_IN_DOCKER = !(hasDockerEnv() || hasProc() || existsSecrets())
+export const APP_IN_DOCKER = hasDockerEnv() || hasProc() || existsSecrets()
 export const inDocker = () => APP_IN_DOCKER
 
 export const getDockerConfig = (name: string): string | false => existsFile(join(CFG, name)) && readFileSync(join(CFG, name), 'utf-8')
