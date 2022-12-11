@@ -22,15 +22,15 @@ import {
   TIMESTAMP,
   TRACE_ID,
 } from './symbols'
-import { ILogger } from './types'
+import { IFormatter, ILogger, IOutLogger } from './types'
 
 export interface BaseOptions extends ParserOptions {}
 
 export class Base {
   private readonly parser: Parser
   constructor(
-    private readonly formatter: { format: (info: Info) => any[] },
-    private readonly out: ILogger,
+    private readonly formatter: IFormatter,
+    private readonly out: IOutLogger,
     private readonly options: BaseOptions,
     private readonly defaultMeta: Meta,
   ) {
@@ -42,9 +42,9 @@ export class Base {
     if (!info.meta.show) return
     const msgs = this.formatter.format(info)
     const level =
-      this.defaultMeta.level in this.out
-        ? this.defaultMeta.level
-        : info.meta.level === 'error' || info.meta.level === 'warn'
+      info.meta.level in this.out && typeof this.out[info.meta.level] === 'function'
+        ? info.meta.level
+        : (info.meta.level === 'error' || info.meta.level === 'warn') && 'error' in this.out && typeof this.out.error === 'function'
         ? 'error'
         : 'log'
 

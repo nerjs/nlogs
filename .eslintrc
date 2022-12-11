@@ -4,8 +4,7 @@
 	"parserOptions": {
 		"ecmaVersion": 2020, 
 		"sourceType": "module",
-		"tsconfigRootDir" : ".",   
-		"project": "tsconfig.json"
+		"tsconfigRootDir" : "."
 	},
 
 	"extends": [
