@@ -82,7 +82,7 @@ export class Details {
   }
 
   toClearedJSON() {
-    const { _depth, _error, _errors, _time, _times, _stack, _stacks, ...obj } = this.toJSON()
+    const { empty, noConsole, options, _depth, _error, _errors, _time, _times, _stack, _stacks, ...obj } = this
     return obj
   }
 

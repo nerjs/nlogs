@@ -11,7 +11,10 @@
     "build": "tsc --build",
     "watch": "tsc --watch",
     "prepublish": "npm run lint && npm run clear && npm run build",
-    "start": "nodemon --enable-source-maps --trace-warnings ./dist"
+    "start": "nodemon --enable-source-maps --trace-warnings ./dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
   },
   "bin": {
     "nlogs": "./bin"
@@ -33,12 +36,15 @@
   },
   "dependencies": {
     "@types/debug": "4.1.7",
+    "@types/jest": "29.2.4",
     "@types/node": "18.11.12",
     "@types/pretty-time": "1.1.2",
     "@types/uuid": "9.0.0",
     "colors": "1.4.0",
     "debug": "4.3.4",
+    "jest": "29.3.1",
     "pretty-time": "1.1.0",
+    "ts-jest": "29.0.3",
     "uuid": "9.0.0"
   }
 }

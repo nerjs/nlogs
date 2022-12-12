@@ -8,7 +8,7 @@ export interface TraceState<T extends object> {
   details?: T
 }
 
-export class TraceStore<T extends object> {
+export class TraceStore<T extends object = object> {
   private readonly storage = new AsyncLocalStorage<TraceState<T>>()
 
   constructor() {

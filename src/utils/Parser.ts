@@ -9,6 +9,7 @@ import {
   DEPTH,
   DETAILS,
   HIGHLIGHT,
+  INDEX,
   IS_DETAILS,
   IS_MESSAGE,
   IS_META,
@@ -43,6 +44,7 @@ const META_MAPPING: { key: symbol; field: keyof Meta }[] = [
   { key: TRACE_ID, field: 'traceId' },
   { key: TIMESTAMP, field: 'timestamp' },
   { key: MODULE, field: 'module' },
+  { key: INDEX, field: 'index' },
   { key: SHOW, field: 'show' },
 ]
 
@@ -97,7 +99,6 @@ export class Parser {
   protected parseSymbolsMeta(msg: MetaInfo, info: Info) {
     const mp = META_MAPPING.find(({ key }) => msg[key] !== undefined)
     if (mp) info.meta.set(mp.field, msg[mp.key])
-    else this.parseSymbolsDetails(msg, info)
   }
 
   protected parseSymbolsMessage(msg: MetaInfo, info: Info) {
@@ -116,6 +117,5 @@ export class Parser {
     if (msg[DETAILS]) info.details.assign(msg[DETAILS])
     else if (msg[DEPTH] !== undefined) info.details.setDepth(msg[DEPTH])
     else if (msg[NO_CONSOLE]) info.details.setNoConsole(msg[NO_CONSOLE])
-    else info.details.assign(msg)
   }
 }

@@ -7,6 +7,7 @@ export class Meta {
     readonly traceId: string,
     readonly timestamp: Date,
     readonly module?: string,
+    readonly index?: string,
     readonly show?: boolean,
   ) {}
 
@@ -17,7 +18,7 @@ export class Meta {
   }
 
   clone() {
-    return new Meta(this.project, this.service, this.category, this.level, this.traceId, this.timestamp, this.module, this.show)
+    return new Meta(this.project, this.service, this.category, this.level, this.traceId, this.timestamp, this.module, this.index, this.show)
   }
 
   toJSON() {

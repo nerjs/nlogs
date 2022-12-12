@@ -29,10 +29,8 @@ export class ErrorDetails {
     return `${this.name}: ${this.message}`
   }
 
-  static stackToArray(stack: string) {
-    return (stack && typeof stack === 'string' ? stack : '')
-      .split('\n')
-      .map(str => str.trim())
-      .filter(str => str.startsWith('at') && !/\s\(?node:/.test(str))
+  static stackToArray(stack: string | string[]) {
+    if (!Array.isArray(stack)) return this.stackToArray((stack || '').split('\n'))
+    return stack.map(str => str.trim()).filter(str => str.startsWith('at') && !/\s\(?node:/.test(str))
   }
 }
