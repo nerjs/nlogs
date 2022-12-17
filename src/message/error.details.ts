@@ -1,3 +1,5 @@
+import { filterNotInternalStack, stackToArray } from '../utils/stack'
+
 export interface ErrorDetails {
   name: string
   message: string
@@ -11,7 +13,7 @@ export class ErrorDetails {
     const { name, message, stack, ...obj } = (error && typeof error === 'object' ? error : {}) as Error
     this.name = name
     this.message = message
-    this.stack = ErrorDetails.stackToArray(stack)
+    this.stack = filterNotInternalStack(stackToArray(stack))
 
     if (Object.keys(obj).length) {
       Object.assign(this, obj)
@@ -27,10 +29,5 @@ export class ErrorDetails {
 
   toString() {
     return `${this.name}: ${this.message}`
-  }
-
-  static stackToArray(stack: string | string[]) {
-    if (!Array.isArray(stack)) return this.stackToArray((stack || '').split('\n'))
-    return stack.map(str => str.trim()).filter(str => str.startsWith('at') && !/\s\(?node:/.test(str))
   }
 }

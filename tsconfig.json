@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "commonjs",
+    "target": "ES2020",
+    "module": "CommonJS",
     "types": ["node", "jest"],
-    "lib": ["es6", "es2017", "esnext.asynciterable"],
+    "lib": ["es6", "es2022", "esnext.asynciterable"],
 
     "outDir": "./dist",
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "baseUrl": "./",
     "paths": {
       "src": ["./dist/"]

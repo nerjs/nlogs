@@ -7,6 +7,7 @@ import {
   DETAILS,
   HIGHLIGHT,
   INDEX,
+  INTERPOLATE,
   IS_DETAILS,
   IS_MESSAGE,
   IS_META,
@@ -22,7 +23,7 @@ import {
   TIMESTAMP,
   TRACE_ID,
 } from './symbols'
-import { IFormatter, ILogger, IOutLogger } from './types'
+import { IFormatter, IOutLogger } from './types'
 
 export interface BaseOptions extends ParserOptions {}
 
@@ -130,5 +131,9 @@ export class Base {
 
   static show(value?: boolean) {
     return this.toMeta(SHOW, value === undefined || !!value)
+  }
+
+  static interpolate(data: any[]) {
+    return this.toMeta(INTERPOLATE, data)
   }
 }

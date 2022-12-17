@@ -24,3 +24,19 @@ export const DEPTH = Symbol('nlogs(details:depth)')
 export const NO_CONSOLE = Symbol('nlogs(no console)')
 
 export const SHOW = Symbol('nlogs(meta:show)')
+export const INTERPOLATE = Symbol('nlogs(interpolate)')
+
+export type MetaInfo = {
+  [key: symbol]: any
+}
+
+export const isMetaInfo = (info: any): info is MetaInfo => {
+  return (
+    typeof info === 'object' &&
+    !Object.keys(info).length &&
+    Object.getOwnPropertySymbols(info).length &&
+    Object.getOwnPropertySymbols(info).every(key => typeof key === 'symbol')
+  )
+}
+
+export const isMeta = (info: any): info is MetaInfo => isMetaInfo(info) && info[IS_META]

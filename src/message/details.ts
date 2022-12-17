@@ -1,3 +1,4 @@
+import { stackToArray } from '../utils/stack'
 import { ErrorDetails } from './error.details'
 import { TimeDetails } from './time.details'
 
@@ -72,7 +73,7 @@ export class Details {
   }
 
   setStack(stack: string | string[], label?: string) {
-    if (!Array.isArray(stack)) return this.setStack(ErrorDetails.stackToArray(stack), label)
+    if (!Array.isArray(stack)) return this.setStack(stackToArray(stack), label)
     const fst = label ? { stack, label } : stack
     setTo(this, '_stack', '_stacks', fst, this.options.canSingleTraceInDetails)
   }
