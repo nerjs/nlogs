@@ -88,10 +88,6 @@ export class Parser {
   protected parseSymbolsMeta(msg: MetaInfo, info: MessageInfo) {
     const mp = META_MAPPING.find(({ key }) => msg[key] !== undefined)
     if (mp) info.meta.set(mp.field, msg[mp.key])
-
-    if (msg[INTERPOLATE] && Array.isArray(msg[INTERPOLATE])) {
-      for (const imsg of msg[INTERPOLATE]) this.parseMsg(imsg, info)
-    }
   }
 
   protected parseOtherSymbols(msg: MetaInfo, info: MessageInfo) {

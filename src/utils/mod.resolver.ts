@@ -2,7 +2,7 @@ import { readFileSync } from 'fs'
 import { dirname } from 'path'
 import { createDebug } from '../helpers/debug'
 import { searchFileRecursive } from '../helpers/fs'
-import { Mod } from './mod'
+import { Mod } from '../helpers/mod'
 
 const debug = createDebug('mod')
 const PACKAGE_JSON = 'package.json'
@@ -25,7 +25,7 @@ export class ModResolver {
   resolve(pathname: string): Mod {
     const saved = this.#modules.get(pathname)
     if (saved) return saved
-    if (!saved && this.#modules.has(pathname)) return this.app
+    if (this.#modules.has(pathname)) return this.app
     const cached = this.resolveCached(pathname)
     if (cached) {
       this.#modules.set(pathname, cached)
@@ -46,7 +46,7 @@ export class ModResolver {
     debug('find app')
     const app = this.findPackage(process.cwd(), 'app')
     if (app) return app
-    return this.createEmptyModule(process.cwd(), 'app')
+    return new Mod('app', process.env.npm_package_name || 'app', process.env.npm_package_version || '1.0.0', process.cwd(), new Set())
   }
 
   private findPackage(pathname: string, type: 'app' | 'module'): Mod | null {
@@ -85,10 +85,5 @@ export class ModResolver {
 
   private includePath(base: string, pathname: string): boolean {
     return pathname.includes(base) && !pathname.replace(base, '').includes(NODE_MODULES)
-  }
-
-  private createEmptyModule(pathname: string, type: 'module' | 'app' = 'module') {
-    debug(`Create empty module by pathname="${pathname}"`)
-    return new Mod(type, process.env.npm_package_name || 'app', process.env.npm_package_version || '1.0.0', pathname, new Set())
   }
 }
