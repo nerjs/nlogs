@@ -26,6 +26,9 @@ import {
 import { MessageInfo } from '../message/message.info'
 import { MetaInfo } from '../helpers/types'
 import { TimeRange } from '../message/time.range'
+import { createDebug } from '../helpers/debug'
+
+const debug = createDebug('parser')
 
 export interface ParserOptions {
   canSingleErrorInDetails: boolean
@@ -48,8 +51,8 @@ export class Parser {
   constructor(private readonly options: ParserOptions, private readonly meta: Meta) {}
 
   parse(data: any[]): MessageInfo {
+    debug('parse message')
     const info = new MessageInfo(this.meta.clone(), new Details(this.options))
-
     for (const msg of data) this.parseMsg(msg, info)
     return info
   }
