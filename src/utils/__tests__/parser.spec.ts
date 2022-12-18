@@ -5,6 +5,7 @@ import { TimeDetails } from '../../message/time.details'
 import { StaticLogger } from '../static.logger'
 import { ParserOptions, Parser } from '../parser'
 import { MessageInfo } from '../../message/message.info'
+import { TimeRange } from '../../message/time.range'
 
 describe('log data parser', () => {
   const options: ParserOptions = {
@@ -56,8 +57,49 @@ describe('log data parser', () => {
     expect(parser.parse([StaticLogger.highlight(text)]).messages).toEqual(expect.arrayContaining([expect.any(HighlightMessage)]))
   })
 
+  it('time range with end date', () => {
+    const delta = 1000
+    const from = new Date(Date.now() - delta - 100)
+    const to = new Date(Date.now() - 100)
+    const info = parser.parse([StaticLogger.timeRange(from, to)])
+
+    expect(info.timeRange).toEqual(info.details._timeRange)
+    expect(info.timeRange).toBeInstanceOf(TimeRange)
+    expect(info.timeRange.delta.ms).toEqual(delta)
+    expect(info.timeRange.from).toEqual(from)
+    expect(info.timeRange.to).toEqual(to)
+  })
+
+  it('time range without end date', () => {
+    const from = new Date(Date.now() - 100)
+    const info = parser.parse([StaticLogger.timeRange(from)])
+
+    expect(info.timeRange.from).toEqual(from)
+    expect(info.timeRange.to).toBeInstanceOf(Date)
+  })
+
+  it('time range with numbers arguments', () => {
+    const delta = 1000
+    const to = Date.now()
+    const from = to - delta
+    const info = parser.parse([StaticLogger.timeRange(from, to)])
+
+    expect(info.timeRange.from.getTime()).toEqual(from)
+    expect(info.timeRange.to.getTime()).toEqual(to)
+  })
+
+  it('time range cannot be added twice', () => {
+    expect(() => parser.parse([StaticLogger.timeRange(1), StaticLogger.timeRange(2)])).toThrow()
+  })
+
+  it('start time greater than the end time', () => {
+    expect(() => parser.parse([StaticLogger.timeRange(2, 1)])).toThrow()
+  })
+
   it('parse depth', () => {
-    expect(parser.parse([StaticLogger.depth(10)]).details._depth).toEqual(10)
+    const info = parser.parse([StaticLogger.depth(10)])
+    expect(info.details._depth).toEqual(10)
+    expect(info.depth).toEqual(10)
   })
 
   it('parse details', () => {
@@ -104,8 +146,28 @@ describe('log data parser', () => {
     expect(info.meta.service).toEqual(service)
     expect(info.meta.category).toEqual(category)
     expect(info.meta.level).toEqual(level)
+    expect(info.level).toEqual(level)
     expect(info.meta.traceId).toEqual(traceId)
     expect(info.meta.index).toEqual(index)
+    expect(info.timestamp).toEqual(timestamp)
     expect(info.meta.timestamp).toEqual(timestamp)
+  })
+
+  it('interpolate', () => {
+    const data = ['qwerty', 123, Symbol('test')]
+    const info = parser.parse([StaticLogger.interpolate(data)])
+    expect(info.messages).toEqual(expect.arrayContaining(data))
+  })
+
+  it('parse show', () => {
+    const info = parser.parse([StaticLogger.show(false)])
+    expect(info.show).toBeFalsy()
+  })
+
+  it('empty', () => {
+    const info = parser.parse([StaticLogger.empty()])
+
+    expect(info.messages.length).toEqual(0)
+    expect(info.details.empty).toBeTruthy()
   })
 })

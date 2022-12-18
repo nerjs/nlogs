@@ -7,6 +7,7 @@ import {
   CATEGORY,
   DEPTH,
   DETAILS,
+  EMPTY,
   HIGHLIGHT,
   INDEX,
   INTERPOLATE,
@@ -17,6 +18,7 @@ import {
   NO_CONSOLE,
   PROJECT,
   SERVICE,
+  SHOW,
   STACKTRACE,
   TIME,
   TIMERANGE,
@@ -112,6 +114,10 @@ export class Parser {
       if (Array.isArray(msg[INTERPOLATE])) {
         msg[INTERPOLATE].forEach(val => this.parseMsg(val, info))
       }
+    } else if (msg[SHOW] !== undefined) {
+      info.setShow(!!msg[SHOW])
+    } else if (msg[EMPTY]) {
+      return
     }
   }
 }

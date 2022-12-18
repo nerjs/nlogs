@@ -24,6 +24,15 @@ export class MessageInfo {
     return this.details._timeRange
   }
 
+  #show: boolean = true
+  get show() {
+    return this.#show
+  }
+
+  setShow(value: boolean) {
+    this.#show = value
+  }
+
   push(...values: any) {
     this.messages.push(...values)
   }

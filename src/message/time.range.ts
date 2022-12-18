@@ -8,7 +8,7 @@ export class TimeRange {
 
   constructor(from: number | Date, to?: number | Date) {
     this.from = from instanceof Date ? from : new Date(from)
-    this.to = to ? (to instanceof Date ? to : new Date(from)) : new Date()
+    this.to = to ? (to instanceof Date ? to : new Date(to)) : new Date()
 
     if (this.from > this.to) throw new MsgNlogsError('The start time cannot be greater than the end time', { from, to })
     this.delta = new TimeDetails(this.to.getTime() - this.from.getTime(), 'Time delta')
