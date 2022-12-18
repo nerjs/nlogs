@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'async_hooks'
-import { uuid } from './string'
-import { MaybePromise } from './types'
+import { uuid } from '../helpers/string'
+import { MaybePromise } from '../helpers/types'
 
 export interface TraceState<T extends object> {
   traceId: string

@@ -1,10 +1,10 @@
 import { ErrorDetails } from '../../message/error.details'
 import { HighlightMessage } from '../../message/highlight.message'
-import { Info } from '../../message/info'
 import { Meta } from '../../message/meta'
 import { TimeDetails } from '../../message/time.details'
-import { Base } from '../Base'
-import { ParserOptions, Parser } from '../Parser'
+import { StaticLogger } from '../static.logger'
+import { ParserOptions, Parser } from '../parser'
+import { MessageInfo } from '../../message/message.info'
 
 describe('log data parser', () => {
   const options: ParserOptions = {
@@ -21,7 +21,7 @@ describe('log data parser', () => {
 
   it('default return info', () => {
     const info = parser.parse([])
-    expect(info).toBeInstanceOf(Info)
+    expect(info).toBeInstanceOf(MessageInfo)
     expect(info.meta).toEqual(meta)
   })
 
@@ -39,35 +39,35 @@ describe('log data parser', () => {
   })
 
   it('parse time', () => {
-    const info = parser.parse([Base.time(12)])
+    const info = parser.parse([StaticLogger.time(12)])
 
     expect(info.messages).toEqual(expect.arrayContaining([expect.any(TimeDetails)]))
     expect(info.details._time).toBeInstanceOf(TimeDetails)
   })
 
   it('parse stacktrace', () => {
-    const info = parser.parse([Base.stacktrace('at row1', 'label')])
+    const info = parser.parse([StaticLogger.stacktrace('at row1', 'label')])
 
     expect(info.details._stack).toEqual({ stack: ['at row1'], label: 'label' })
   })
 
   it('parse highlight', () => {
     const text = 'text'
-    expect(parser.parse([Base.highlight(text)]).messages).toEqual(expect.arrayContaining([expect.any(HighlightMessage)]))
+    expect(parser.parse([StaticLogger.highlight(text)]).messages).toEqual(expect.arrayContaining([expect.any(HighlightMessage)]))
   })
 
   it('parse depth', () => {
-    expect(parser.parse([Base.depth(10)]).details._depth).toEqual(10)
+    expect(parser.parse([StaticLogger.depth(10)]).details._depth).toEqual(10)
   })
 
   it('parse details', () => {
     const details = { field: 'qwerty' }
-    expect(parser.parse([Base.details(details)]).details.toClearedJSON()).toEqual(details)
+    expect(parser.parse([StaticLogger.details(details)]).details.toClearedJSON()).toEqual(details)
   })
 
   it('parse no console details', () => {
     const details = { field: 'qwerty' }
-    const info = parser.parse([Base.noConsole(details)])
+    const info = parser.parse([StaticLogger.noConsole(details)])
     expect(info.details.toJSON()).toEqual(details)
     expect(info.details.toClearedJSON()).not.toEqual(details)
   })
@@ -90,15 +90,15 @@ describe('log data parser', () => {
     const show = false
 
     const info = parser.parse([
-      Base.module(module),
-      Base.project(project),
-      Base.service(service),
-      Base.category(category),
-      Base.level(level),
-      Base.traceId(traceId),
-      Base.index(index),
-      Base.timestamp(timestamp),
-      Base.show(show),
+      StaticLogger.module(module),
+      StaticLogger.project(project),
+      StaticLogger.service(service),
+      StaticLogger.category(category),
+      StaticLogger.level(level),
+      StaticLogger.traceId(traceId),
+      StaticLogger.index(index),
+      StaticLogger.timestamp(timestamp),
+      StaticLogger.show(show),
     ])
 
     expect(info.meta.module).toEqual(module)

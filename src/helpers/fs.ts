@@ -1,7 +1,7 @@
 import { Stats, statSync } from 'fs'
 import { join } from 'path'
 import { FsNlogsError } from '../errors/fs.nlogs.error'
-import { createDebug } from './debug'
+import { createDebug } from '../helpers/debug'
 
 const debug = createDebug('fs')
 export const HOME = process.env.HOME || '/'

@@ -1,8 +1,8 @@
 import { CatNlogsError } from '../errors/cat.nlogs.error'
-import { createDebug } from './debug'
+import { createDebug } from '../helpers/debug'
 import { Mod } from './mod'
-import { getTopStackFile } from './stack'
-import { clearString } from './string'
+import { getTopStackFile } from '../helpers/stack'
+import { clearString } from '../helpers/string'
 
 const debug = createDebug('category')
 

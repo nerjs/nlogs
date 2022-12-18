@@ -1,4 +1,4 @@
-import { TraceStore } from '../TraceStore'
+import { TraceStore } from '../trace.store'
 
 describe('trace store', () => {
   //   let store: TraceStore

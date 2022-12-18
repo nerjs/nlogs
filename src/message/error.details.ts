@@ -1,4 +1,4 @@
-import { filterNotInternalStack, stackToArray } from '../utils/stack'
+import { filterNotInternalStack, stackToArray } from '../helpers/stack'
 
 export interface ErrorDetails {
   name: string

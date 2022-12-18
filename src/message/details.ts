@@ -1,6 +1,8 @@
-import { stackToArray } from '../utils/stack'
+import { MsgNlogsError } from '../errors/msg.nlogs.error'
+import { stackToArray } from '../helpers/stack'
 import { ErrorDetails } from './error.details'
 import { TimeDetails } from './time.details'
+import { TimeRange } from './time.range'
 
 interface IDetails {
   _error?: ErrorDetails
@@ -40,6 +42,7 @@ export interface DetailsOptions {
 }
 
 export interface Details extends IDetails {
+  _timeRange?: TimeRange
   _depth?: number
 }
 export class Details {
@@ -82,8 +85,19 @@ export class Details {
     this._depth = depth
   }
 
+  setTimeRange(range: TimeRange) {
+    if (this._timeRange) throw new MsgNlogsError('It is not correct to add a time range twice to the same log.', range)
+    this._timeRange = range
+    this.setTime(range.delta)
+  }
+
   toClearedJSON() {
-    const { empty, noConsole, options, _depth, _error, _errors, _time, _times, _stack, _stacks, ...obj } = this
+    const { empty, noConsole, options, ...obj } = this
+    Object.keys(obj)
+      .filter(key => key.startsWith('_'))
+      .forEach(key => {
+        delete obj[key]
+      })
     return obj
   }
 

@@ -1,7 +1,6 @@
 import { Details } from '../message/details'
 import { ErrorDetails } from '../message/error.details'
 import { HighlightMessage } from '../message/highlight.message'
-import { Info } from '../message/info'
 import { Meta } from '../message/meta'
 import { TimeDetails } from '../message/time.details'
 import {
@@ -12,12 +11,9 @@ import {
   INDEX,
   INTERPOLATE,
   isMetaInfo,
-  IS_DETAILS,
-  IS_MESSAGE,
   IS_META,
   LABEL,
   LEVEL,
-  MetaInfo,
   MODULE,
   NO_CONSOLE,
   PROJECT,
@@ -27,7 +23,9 @@ import {
   TIME,
   TIMESTAMP,
   TRACE_ID,
-} from './symbols'
+} from '../helpers/symbols'
+import { MessageInfo } from '../message/message.info'
+import { MetaInfo } from '../helpers/types'
 
 export interface ParserOptions {
   canSingleErrorInDetails: boolean
@@ -50,19 +48,19 @@ const META_MAPPING: { key: symbol; field: keyof Meta }[] = [
 export class Parser {
   constructor(private readonly options: ParserOptions, private readonly meta: Meta) {}
 
-  parse(data: any[]): Info {
-    const info = new Info(this.meta.clone(), [], new Details(this.options))
+  parse(data: any[]): MessageInfo {
+    const info = new MessageInfo(this.meta.clone(), new Details(this.options))
 
     for (const msg of data) this.parseMsg(msg, info)
     return info
   }
 
-  protected parseMsg(msg: any, info: Info) {
+  protected parseMsg(msg: any, info: MessageInfo) {
     if (typeof msg === 'object') this.parseObject(msg, info)
     else this.parsePrimitives(msg, info)
   }
 
-  protected parseObject(msg: object, info: Info) {
+  protected parseObject(msg: object, info: MessageInfo) {
     if (!msg || Array.isArray(msg) || msg instanceof Date) {
       info.messages.push(msg)
     } else if (msg instanceof Error) {
@@ -76,17 +74,17 @@ export class Parser {
     }
   }
 
-  protected parsePrimitives(value: any, info: Info) {
+  protected parsePrimitives(value: any, info: MessageInfo) {
     info.messages.push(value)
   }
 
-  protected parseSymbolsMetaInfo(msg: MetaInfo, info: Info) {
+  protected parseSymbolsMetaInfo(msg: MetaInfo, info: MessageInfo) {
     if (msg[IS_META]) return this.parseSymbolsMeta(msg, info)
-    else if (msg[IS_MESSAGE]) return this.parseSymbolsMessage(msg, info)
-    else if (msg[IS_DETAILS]) return this.parseSymbolsDetails(msg, info)
+    // else if (msg[IS_MESSAGE]) return this.parseSymbolsMessage(msg, info)
+    // else if (msg[IS_DETAILS]) return this.parseSymbolsDetails(msg, info)
   }
 
-  protected parseSymbolsMeta(msg: MetaInfo, info: Info) {
+  protected parseSymbolsMeta(msg: MetaInfo, info: MessageInfo) {
     const mp = META_MAPPING.find(({ key }) => msg[key] !== undefined)
     if (mp) info.meta.set(mp.field, msg[mp.key])
 
@@ -95,7 +93,7 @@ export class Parser {
     }
   }
 
-  protected parseSymbolsMessage(msg: MetaInfo, info: Info) {
+  protected parseSymbolsMessage(msg: MetaInfo, info: MessageInfo) {
     if (msg[TIME] !== undefined) {
       const time = new TimeDetails(msg[TIME], msg[LABEL])
       info.messages.push(time)
@@ -107,7 +105,7 @@ export class Parser {
     }
   }
 
-  protected parseSymbolsDetails(msg: MetaInfo, info: Info) {
+  protected parseSymbolsDetails(msg: MetaInfo, info: MessageInfo) {
     if (msg[DETAILS]) info.details.assign(msg[DETAILS])
     else if (msg[DEPTH] !== undefined) info.details.setDepth(msg[DEPTH])
     else if (msg[NO_CONSOLE]) info.details.setNoConsole(msg[NO_CONSOLE])

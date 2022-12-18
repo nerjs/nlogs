@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import { dirname } from 'path'
-import { createDebug } from './debug'
-import { searchFileRecursive } from './fs'
+import { createDebug } from '../helpers/debug'
+import { searchFileRecursive } from '../helpers/fs'
 import { Mod } from './mod'
 
 const debug = createDebug('mod')

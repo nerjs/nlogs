@@ -1,15 +1,11 @@
-import { Info } from '../message/info'
-import { Meta } from '../message/meta'
-import { Parser, ParserOptions } from './Parser'
 import {
   CATEGORY,
   DEPTH,
   DETAILS,
+  EMPTY,
   HIGHLIGHT,
   INDEX,
   INTERPOLATE,
-  IS_DETAILS,
-  IS_MESSAGE,
   IS_META,
   LABEL,
   LEVEL,
@@ -22,12 +18,10 @@ import {
   TIME,
   TIMESTAMP,
   TRACE_ID,
-} from './symbols'
-import { IFormatter, IOutLogger } from './types'
+} from '../helpers/symbols'
 
-export interface BaseOptions extends ParserOptions {}
-
-export class Base {
+export class StaticLogger {
+  /*
   private readonly parser: Parser
   constructor(
     private readonly formatter: IFormatter,
@@ -51,6 +45,7 @@ export class Base {
 
     this.out[level]?.(...msgs)
   }
+  */
 
   static createBase(typeSymbol: symbol, key: symbol, value: any, obj?: object) {
     return {
@@ -61,7 +56,7 @@ export class Base {
   }
 
   static toMessage(key: symbol, value: any, obj?: object) {
-    return this.createBase(IS_MESSAGE, key, value, obj)
+    return this.createBase(IS_META, key, value, obj)
   }
 
   static toMeta(key: symbol, value: any, obj?: object) {
@@ -69,7 +64,7 @@ export class Base {
   }
 
   static toDetails(key: symbol, value: any, obj?: object) {
-    return this.createBase(IS_DETAILS, key, value, obj)
+    return this.createBase(IS_META, key, value, obj)
   }
 
   // messages
@@ -135,5 +130,9 @@ export class Base {
 
   static interpolate(data: any[]) {
     return this.toMeta(INTERPOLATE, data)
+  }
+
+  static empty() {
+    return this.toMeta(EMPTY, true)
   }
 }
