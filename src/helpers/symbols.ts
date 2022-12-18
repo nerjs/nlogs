@@ -5,7 +5,7 @@ export const IS_META_INFO = Symbol('nlogs(is meta info)')
 
 // messages
 export const TIME = Symbol('nlogs(message:time)')
-export const LABEL = Symbol('nlogs(message:label)')
+export const TIMERANGE = Symbol('nlogs(time range)')
 export const HIGHLIGHT = Symbol('nlogs(message:highlight)')
 export const STACKTRACE = Symbol('nlogs(message:stacktrace)')
 
@@ -40,6 +40,6 @@ export const isMetaInfo = (info: any): info is MetaInfo => {
   )
 }
 
-export const toMeta = (key: symbol, value: any): MetaInfo => toMetaInfo({ [key]: value })
+export const toMeta = (obj: object): MetaInfo => toMetaInfo({ [IS_META]: true, ...obj })
 
 export const isMeta = (info: any): info is MetaInfo => isMetaInfo(info) && info[IS_META]

@@ -10,22 +10,22 @@ import {
   HIGHLIGHT,
   INDEX,
   INTERPOLATE,
+  isMeta,
   isMetaInfo,
-  IS_META,
-  LABEL,
   LEVEL,
   MODULE,
   NO_CONSOLE,
   PROJECT,
   SERVICE,
-  SHOW,
   STACKTRACE,
   TIME,
+  TIMERANGE,
   TIMESTAMP,
   TRACE_ID,
 } from '../helpers/symbols'
 import { MessageInfo } from '../message/message.info'
 import { MetaInfo } from '../helpers/types'
+import { TimeRange } from '../message/time.range'
 
 export interface ParserOptions {
   canSingleErrorInDetails: boolean
@@ -42,7 +42,6 @@ const META_MAPPING: { key: symbol; field: keyof Meta }[] = [
   { key: TIMESTAMP, field: 'timestamp' },
   { key: MODULE, field: 'module' },
   { key: INDEX, field: 'index' },
-  { key: SHOW, field: 'show' },
 ]
 
 export class Parser {
@@ -79,9 +78,8 @@ export class Parser {
   }
 
   protected parseSymbolsMetaInfo(msg: MetaInfo, info: MessageInfo) {
-    if (msg[IS_META]) return this.parseSymbolsMeta(msg, info)
-    // else if (msg[IS_MESSAGE]) return this.parseSymbolsMessage(msg, info)
-    // else if (msg[IS_DETAILS]) return this.parseSymbolsDetails(msg, info)
+    if (isMeta(msg)) return this.parseSymbolsMeta(msg, info)
+    this.parseOtherSymbols(msg, info)
   }
 
   protected parseSymbolsMeta(msg: MetaInfo, info: MessageInfo) {
@@ -93,21 +91,28 @@ export class Parser {
     }
   }
 
-  protected parseSymbolsMessage(msg: MetaInfo, info: MessageInfo) {
-    if (msg[TIME] !== undefined) {
-      const time = new TimeDetails(msg[TIME], msg[LABEL])
-      info.messages.push(time)
+  protected parseOtherSymbols(msg: MetaInfo, info: MessageInfo) {
+    if (msg[TIME]) {
+      const time = new TimeDetails(msg[TIME]?.ms, msg[TIME]?.label)
+      info.push(time)
       info.details.setTime(time)
     } else if (msg[HIGHLIGHT]) {
-      info.messages.push(new HighlightMessage(msg[HIGHLIGHT]))
+      info.push(new HighlightMessage(msg[HIGHLIGHT]))
     } else if (msg[STACKTRACE]) {
-      info.details.setStack(msg[STACKTRACE], msg[LABEL])
+      info.details.setStack(msg[STACKTRACE]?.stack, msg[STACKTRACE]?.label)
+    } else if (msg[DETAILS]) {
+      info.details.assign(msg[DETAILS])
+    } else if (msg[DEPTH] !== undefined) {
+      info.details.setDepth(msg[DEPTH])
+    } else if (msg[NO_CONSOLE]) {
+      info.details.setNoConsole(msg[NO_CONSOLE])
+    } else if (msg[TIMERANGE]) {
+      const range = new TimeRange(msg[TIMERANGE]?.from, msg[TIMERANGE]?.to)
+      info.details.setTimeRange(range)
+    } else if (msg[INTERPOLATE]) {
+      if (Array.isArray(msg[INTERPOLATE])) {
+        msg[INTERPOLATE].forEach(val => this.parseMsg(val, info))
+      }
     }
-  }
-
-  protected parseSymbolsDetails(msg: MetaInfo, info: MessageInfo) {
-    if (msg[DETAILS]) info.details.assign(msg[DETAILS])
-    else if (msg[DEPTH] !== undefined) info.details.setDepth(msg[DEPTH])
-    else if (msg[NO_CONSOLE]) info.details.setNoConsole(msg[NO_CONSOLE])
   }
 }

@@ -3,7 +3,7 @@ import { Meta } from './meta'
 import { TimeRange } from './time.range'
 
 export class MessageInfo {
-  readonly messages: any[]
+  readonly messages: any[] = []
   constructor(readonly meta: Meta, readonly details: Details, messages?: any[]) {
     if (messages) this.messages = messages
   }
@@ -22,5 +22,9 @@ export class MessageInfo {
 
   get timeRange(): TimeRange | undefined {
     return this.details._timeRange
+  }
+
+  push(...values: any) {
+    this.messages.push(...values)
   }
 }

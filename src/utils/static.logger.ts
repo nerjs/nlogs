@@ -6,8 +6,6 @@ import {
   HIGHLIGHT,
   INDEX,
   INTERPOLATE,
-  IS_META,
-  LABEL,
   LEVEL,
   MODULE,
   NO_CONSOLE,
@@ -16,7 +14,10 @@ import {
   SHOW,
   STACKTRACE,
   TIME,
+  TIMERANGE,
   TIMESTAMP,
+  toMeta,
+  toMetaInfo,
   TRACE_ID,
 } from '../helpers/symbols'
 
@@ -47,54 +48,42 @@ export class StaticLogger {
   }
   */
 
-  static createBase(typeSymbol: symbol, key: symbol, value: any, obj?: object) {
-    return {
-      [typeSymbol]: true,
-      [key]: value,
-      ...(obj || {}),
-    }
+  static toMetaInfo(key: symbol, value: any) {
+    return toMetaInfo({ [key]: value })
   }
 
-  static toMessage(key: symbol, value: any, obj?: object) {
-    return this.createBase(IS_META, key, value, obj)
-  }
-
-  static toMeta(key: symbol, value: any, obj?: object) {
-    return this.createBase(IS_META, key, value, obj)
-  }
-
-  static toDetails(key: symbol, value: any, obj?: object) {
-    return this.createBase(IS_META, key, value, obj)
+  static toMeta(key: symbol, value: any) {
+    return toMeta({ [key]: value })
   }
 
   // messages
   static time(ms: number, label?: string) {
-    return this.toMessage(TIME, ms, {
-      [LABEL]: label,
-    })
+    return this.toMetaInfo(TIME, { ms, label })
   }
 
   static highlight(text: string) {
-    return this.toMessage(HIGHLIGHT, text)
+    return this.toMetaInfo(HIGHLIGHT, text)
   }
 
   static stacktrace(stack: string | string[], label?: string) {
-    return this.toMessage(STACKTRACE, stack, {
-      [LABEL]: label,
-    })
+    return this.toMetaInfo(STACKTRACE, { stack, label })
   }
 
   // details
   static details(obj: Record<string, any>) {
-    return this.toDetails(DETAILS, obj)
+    return this.toMetaInfo(DETAILS, obj)
   }
 
   static depth(depth: number) {
-    return this.toDetails(DEPTH, depth)
+    return this.toMetaInfo(DEPTH, depth)
   }
 
   static noConsole(obj: Record<string, any>) {
-    return this.toDetails(NO_CONSOLE, obj)
+    return this.toMetaInfo(NO_CONSOLE, obj)
+  }
+
+  static timeRange(from: Date | number, to?: Date | number) {
+    return this.toMetaInfo(TIMERANGE, { from, to })
   }
 
   // meta
@@ -125,14 +114,14 @@ export class StaticLogger {
   }
 
   static show(value?: boolean) {
-    return this.toMeta(SHOW, value === undefined || !!value)
+    return this.toMetaInfo(SHOW, value === undefined || !!value)
   }
 
   static interpolate(data: any[]) {
-    return this.toMeta(INTERPOLATE, data)
+    return this.toMetaInfo(INTERPOLATE, data)
   }
 
   static empty() {
-    return this.toMeta(EMPTY, true)
+    return this.toMetaInfo(EMPTY, true)
   }
 }

@@ -87,7 +87,6 @@ describe('log data parser', () => {
     const traceId = 'traceId2'
     const index = 'index2'
     const timestamp = new Date()
-    const show = false
 
     const info = parser.parse([
       StaticLogger.module(module),
@@ -98,7 +97,6 @@ describe('log data parser', () => {
       StaticLogger.traceId(traceId),
       StaticLogger.index(index),
       StaticLogger.timestamp(timestamp),
-      StaticLogger.show(show),
     ])
 
     expect(info.meta.module).toEqual(module)
@@ -109,6 +107,5 @@ describe('log data parser', () => {
     expect(info.meta.traceId).toEqual(traceId)
     expect(info.meta.index).toEqual(index)
     expect(info.meta.timestamp).toEqual(timestamp)
-    expect(info.meta.show).toEqual(show)
   })
 })
