@@ -32,6 +32,7 @@ export const toMetaInfo = (obj: object): MetaInfo => Object.assign({ [IS_META_IN
 
 export const isMetaInfo = (info: any): info is MetaInfo => {
   return (
+    info &&
     typeof info === 'object' &&
     !Object.keys(info).length &&
     Object.getOwnPropertySymbols(info).length &&

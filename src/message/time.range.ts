@@ -6,11 +6,21 @@ export class TimeRange {
   readonly to: Date
   readonly delta: TimeDetails
 
-  constructor(from: number | Date, to?: number | Date) {
+  constructor(from: number | Date, to?: number | Date)
+  constructor(from: number | Date, label?: string)
+  constructor(from: number | Date, to: number | Date, label?: string)
+  constructor(from: number | Date, toOrLabel?: number | Date | string, label?: string) {
     this.from = from instanceof Date ? from : new Date(from)
-    this.to = to ? (to instanceof Date ? to : new Date(to)) : new Date()
+    this.to = toOrLabel
+      ? toOrLabel instanceof Date
+        ? toOrLabel
+        : typeof toOrLabel === 'number'
+        ? new Date(toOrLabel)
+        : new Date()
+      : new Date()
 
-    if (this.from > this.to) throw new MsgNlogsError('The start time cannot be greater than the end time', { from, to })
-    this.delta = new TimeDetails(this.to.getTime() - this.from.getTime(), 'Time delta')
+    if (this.from > this.to) throw new MsgNlogsError('The start time cannot be greater than the end time', { from: this.from, to: this.to })
+    const deltaLabel = toOrLabel && typeof toOrLabel === 'string' ? toOrLabel : label && typeof label === 'string' ? label : 'Time delta'
+    this.delta = new TimeDetails(this.to.getTime() - this.from.getTime(), deltaLabel)
   }
 }

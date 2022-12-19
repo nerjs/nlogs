@@ -7,7 +7,7 @@
 
     "outDir": "./dist",
     "moduleResolution": "Node",
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "paths": {
       "src": ["./dist/"]
     },

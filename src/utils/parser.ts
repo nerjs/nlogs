@@ -108,8 +108,9 @@ export class Parser {
     } else if (msg[NO_CONSOLE]) {
       info.details.setNoConsole(msg[NO_CONSOLE])
     } else if (msg[TIMERANGE]) {
-      const range = new TimeRange(msg[TIMERANGE]?.from, msg[TIMERANGE]?.to)
+      const range = new TimeRange(msg[TIMERANGE]?.from, msg[TIMERANGE]?.to, msg[TIMERANGE]?.label)
       info.details.setTimeRange(range)
+      info.push(range.delta)
     } else if (msg[INTERPOLATE]) {
       if (Array.isArray(msg[INTERPOLATE])) {
         msg[INTERPOLATE].forEach(val => this.parseMsg(val, info))

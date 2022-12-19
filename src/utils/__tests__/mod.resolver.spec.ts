@@ -1,13 +1,12 @@
 import { ModResolver } from '../mod.resolver'
-import pkg from '../../../package.json'
-import tsPkg from '../../../node_modules/typescript/package.json'
-import { join, resolve } from 'path'
+import { join } from 'path'
 
 const HOME = process.env.HOME
-const CWD = process.cwd()
 const pathname = join(__dirname, '../../..')
 const tsPathname = join(__dirname, '../../../node_modules/typescript')
 const fakePathname = join(__dirname, '../../../node_modules/test-fake-module')
+const pkg = JSON.parse(pathname)
+const tsPkg = JSON.parse(tsPathname)
 
 describe('Module resolver', () => {
   let modResolver: ModResolver

@@ -20,6 +20,7 @@ import {
   toMetaInfo,
   TRACE_ID,
 } from '../helpers/symbols'
+import { MetaInfo } from '../helpers/types'
 
 export class StaticLogger {
   /*
@@ -82,8 +83,15 @@ export class StaticLogger {
     return this.toMetaInfo(NO_CONSOLE, obj)
   }
 
-  static timeRange(from: Date | number, to?: Date | number) {
-    return this.toMetaInfo(TIMERANGE, { from, to })
+  static timeRange(from: number | Date, to?: number | Date): MetaInfo
+  static timeRange(from: number | Date, label?: string): MetaInfo
+  static timeRange(from: number | Date, to: number | Date, label?: string): MetaInfo
+  static timeRange(from: number | Date, toOrLabel?: number | Date | string, label?: string) {
+    return this.toMetaInfo(TIMERANGE, {
+      from,
+      to: typeof toOrLabel !== 'string' ? toOrLabel : undefined,
+      label: typeof toOrLabel === 'string' ? toOrLabel : label,
+    })
   }
 
   // meta

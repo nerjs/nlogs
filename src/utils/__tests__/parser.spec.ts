@@ -13,7 +13,7 @@ describe('log data parser', () => {
     canSingleTimeInDetails: true,
     canSingleTraceInDetails: true,
   }
-  const meta = new Meta('project', 'service', 'category', 'debug', 'traceId', new Date(), 'module', 'index', true)
+  const meta = new Meta('project', 'service', 'category', 'debug', 'traceId', new Date(), 'module', 'index')
   let parser: Parser
 
   beforeEach(() => {
