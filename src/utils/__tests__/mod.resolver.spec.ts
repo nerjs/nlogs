@@ -1,12 +1,13 @@
 import { ModResolver } from '../mod.resolver'
 import { join } from 'path'
+import { readFileSync } from 'fs'
 
 const HOME = process.env.HOME
 const pathname = join(__dirname, '../../..')
 const tsPathname = join(__dirname, '../../../node_modules/typescript')
 const fakePathname = join(__dirname, '../../../node_modules/test-fake-module')
-const pkg = JSON.parse(pathname)
-const tsPkg = JSON.parse(tsPathname)
+const pkg = JSON.parse(readFileSync(join(pathname, 'package.json'), 'utf-8'))
+const tsPkg = JSON.parse(readFileSync(join(tsPathname, 'package.json'), 'utf-8'))
 
 describe('Module resolver', () => {
   let modResolver: ModResolver

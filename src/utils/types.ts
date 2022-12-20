@@ -1,3 +1,4 @@
+import { Mod } from '../helpers/mod'
 import { ILogger } from '../helpers/types'
 import { MessageInfo } from '../message/message.info'
 
@@ -11,7 +12,7 @@ export enum Levels {
 }
 
 export interface IFormatter {
-  format(info: MessageInfo): any[]
+  format(info: MessageInfo, mod: Mod): any[]
 }
 
 export type IOutLogger = Partial<ILogger> & Pick<ILogger, 'log'>

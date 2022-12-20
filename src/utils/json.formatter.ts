@@ -19,7 +19,7 @@ export class JsonFormatter implements IFormatter {
     return [
       JSON.stringify({
         meta: info.meta,
-        message: messages.join('; '),
+        message: messages.join(' '),
         details: info.details.toJSON(),
         '@timestamp': info.timestamp,
         '@index': info.meta.index,

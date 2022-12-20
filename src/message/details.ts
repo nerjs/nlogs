@@ -6,9 +6,9 @@ import { TimeRange } from './time.range'
 
 interface IDetails {
   _error?: ErrorDetails
-  _errors?: ErrorDetails | ErrorDetails[]
+  _errors?: ErrorDetails[]
   _time?: TimeDetails
-  _times?: TimeDetails | TimeDetails[]
+  _times?: TimeDetails[]
   _stack?: string[] | { label: string; stack: string[] }
   _stacks?: (string[] | { label: string; stack: string[] })[]
 
