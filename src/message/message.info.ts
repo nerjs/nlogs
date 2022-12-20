@@ -1,11 +1,14 @@
+import { Mod } from '../helpers/mod'
 import { Details } from './details'
 import { Meta } from './meta'
 import { TimeRange } from './time.range'
 
 export class MessageInfo {
   readonly messages: any[] = []
-  constructor(readonly meta: Meta, readonly details: Details, messages?: any[]) {
-    if (messages) this.messages = messages
+  constructor(readonly meta: Meta, readonly details: Details, readonly module: Mod) {
+    details.setNoConsole({
+      _module: module,
+    })
   }
 
   get level() {

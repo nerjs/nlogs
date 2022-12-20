@@ -29,6 +29,7 @@ import { MessageInfo } from '../message/message.info'
 import { MetaInfo } from '../helpers/types'
 import { TimeRange } from '../message/time.range'
 import { createDebug } from '../helpers/debug'
+import { Mod } from '../helpers/mod'
 
 const debug = createDebug('parser')
 
@@ -52,9 +53,9 @@ const META_MAPPING: { key: symbol; field: keyof Meta }[] = [
 export class Parser {
   constructor(private readonly options: ParserOptions, private readonly meta: Meta) {}
 
-  parse(data: any[]): MessageInfo {
+  parse(data: any[], mod: Mod): MessageInfo {
     debug('parse message')
-    const info = new MessageInfo(this.meta.clone(), new Details(this.options))
+    const info = new MessageInfo(this.meta.clone(), new Details(this.options), mod)
     for (const msg of data) this.parseMsg(msg, info)
     return info
   }

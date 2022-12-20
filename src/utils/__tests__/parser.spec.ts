@@ -6,6 +6,7 @@ import { StaticLogger } from '../static.logger'
 import { ParserOptions, Parser } from '../parser'
 import { MessageInfo } from '../../message/message.info'
 import { TimeRange } from '../../message/time.range'
+import { Mod } from '../../helpers/mod'
 
 describe('log data parser', () => {
   const options: ParserOptions = {
@@ -13,6 +14,7 @@ describe('log data parser', () => {
     canSingleTimeInDetails: true,
     canSingleTraceInDetails: true,
   }
+  const mod = new Mod('app', '', '', '')
   const meta = new Meta('project', 'service', 'category', 'debug', 'traceId', new Date(), 'module', 'index')
   let parser: Parser
 
@@ -21,47 +23,47 @@ describe('log data parser', () => {
   })
 
   it('default return info', () => {
-    const info = parser.parse([])
+    const info = parser.parse([], mod)
     expect(info).toBeInstanceOf(MessageInfo)
     expect(info.meta).toEqual(meta)
   })
 
   it('parse simple types', () => {
     const types = [1, '1', null, true, false, undefined, Symbol(), new Date(), BigInt(1), Date]
-    expect(parser.parse(types).messages).toEqual(types)
+    expect(parser.parse(types, mod).messages).toEqual(types)
   })
 
   it('parse error', () => {
     const error = new Error('qwerty')
-    const info = parser.parse([error])
+    const info = parser.parse([error], mod)
 
     expect(info.messages).toEqual(expect.arrayContaining([expect.any(ErrorDetails)]))
     expect(info.details._error).toBeInstanceOf(ErrorDetails)
   })
 
   it('parse time', () => {
-    const info = parser.parse([StaticLogger.time(12)])
+    const info = parser.parse([StaticLogger.time(12)], mod)
 
     expect(info.messages).toEqual(expect.arrayContaining([expect.any(TimeDetails)]))
     expect(info.details._time).toBeInstanceOf(TimeDetails)
   })
 
   it('parse stacktrace', () => {
-    const info = parser.parse([StaticLogger.stacktrace('at row1', 'label')])
+    const info = parser.parse([StaticLogger.stacktrace('at row1', 'label')], mod)
 
     expect(info.details._stack).toEqual({ stack: ['at row1'], label: 'label' })
   })
 
   it('parse highlight', () => {
     const text = 'text'
-    expect(parser.parse([StaticLogger.highlight(text)]).messages).toEqual(expect.arrayContaining([expect.any(HighlightMessage)]))
+    expect(parser.parse([StaticLogger.highlight(text)], mod).messages).toEqual(expect.arrayContaining([expect.any(HighlightMessage)]))
   })
 
   it('time range with end date', () => {
     const delta = 1000
     const from = new Date(Date.now() - delta - 100)
     const to = new Date(Date.now() - 100)
-    const info = parser.parse([StaticLogger.timeRange(from, to)])
+    const info = parser.parse([StaticLogger.timeRange(from, to)], mod)
 
     expect(info.timeRange).toEqual(info.details._timeRange)
     expect(info.timeRange).toBeInstanceOf(TimeRange)
@@ -72,7 +74,7 @@ describe('log data parser', () => {
 
   it('time range without end date', () => {
     const from = new Date(Date.now() - 100)
-    const info = parser.parse([StaticLogger.timeRange(from)])
+    const info = parser.parse([StaticLogger.timeRange(from)], mod)
 
     expect(info.timeRange.from).toEqual(from)
     expect(info.timeRange.to).toBeInstanceOf(Date)
@@ -82,42 +84,42 @@ describe('log data parser', () => {
     const delta = 1000
     const to = Date.now()
     const from = to - delta
-    const info = parser.parse([StaticLogger.timeRange(from, to)])
+    const info = parser.parse([StaticLogger.timeRange(from, to)], mod)
 
     expect(info.timeRange.from.getTime()).toEqual(from)
     expect(info.timeRange.to.getTime()).toEqual(to)
   })
 
   it('time range cannot be added twice', () => {
-    expect(() => parser.parse([StaticLogger.timeRange(1), StaticLogger.timeRange(2)])).toThrow()
+    expect(() => parser.parse([StaticLogger.timeRange(1), StaticLogger.timeRange(2)], mod)).toThrow()
   })
 
   it('start time greater than the end time', () => {
-    expect(() => parser.parse([StaticLogger.timeRange(2, 1)])).toThrow()
+    expect(() => parser.parse([StaticLogger.timeRange(2, 1)], mod)).toThrow()
   })
 
   it('parse depth', () => {
-    const info = parser.parse([StaticLogger.depth(10)])
+    const info = parser.parse([StaticLogger.depth(10)], mod)
     expect(info.details._depth).toEqual(10)
     expect(info.depth).toEqual(10)
   })
 
   it('parse details', () => {
     const details = { field: 'qwerty' }
-    expect(parser.parse([StaticLogger.details(details)]).details.toClearedJSON()).toEqual(details)
+    expect(parser.parse([StaticLogger.details(details)], mod).details.toClearedJSON()).toEqual(details)
   })
 
   it('parse no console details', () => {
     const details = { field: 'qwerty' }
-    const info = parser.parse([StaticLogger.noConsole(details)])
-    expect(info.details.toJSON()).toEqual(details)
-    expect(info.details.toClearedJSON()).not.toEqual(details)
+    const info = parser.parse([StaticLogger.noConsole(details)], mod)
+    expect(info.details.toJSON()).toEqual(expect.objectContaining(details))
+    expect(info.details.toClearedJSON()).not.toEqual(expect.objectContaining(details))
   })
 
   it('parse objects details', () => {
     const details = { field: 'qwerty' }
-    const info = parser.parse([details])
-    expect(info.details.toJSON()).toEqual(details)
+    const info = parser.parse([details], mod)
+    expect(info.details.toJSON()).toEqual(expect.objectContaining(details))
   })
 
   it('parse meta', () => {
@@ -130,16 +132,19 @@ describe('log data parser', () => {
     const index = 'index2'
     const timestamp = new Date()
 
-    const info = parser.parse([
-      StaticLogger.module(module),
-      StaticLogger.project(project),
-      StaticLogger.service(service),
-      StaticLogger.category(category),
-      StaticLogger.level(level),
-      StaticLogger.traceId(traceId),
-      StaticLogger.index(index),
-      StaticLogger.timestamp(timestamp),
-    ])
+    const info = parser.parse(
+      [
+        StaticLogger.module(module),
+        StaticLogger.project(project),
+        StaticLogger.service(service),
+        StaticLogger.category(category),
+        StaticLogger.level(level),
+        StaticLogger.traceId(traceId),
+        StaticLogger.index(index),
+        StaticLogger.timestamp(timestamp),
+      ],
+      mod,
+    )
 
     expect(info.meta.module).toEqual(module)
     expect(info.meta.project).toEqual(project)
@@ -155,17 +160,17 @@ describe('log data parser', () => {
 
   it('interpolate', () => {
     const data = ['qwerty', 123, Symbol('test')]
-    const info = parser.parse([StaticLogger.interpolate(data)])
+    const info = parser.parse([StaticLogger.interpolate(data)], mod)
     expect(info.messages).toEqual(expect.arrayContaining(data))
   })
 
   it('parse show', () => {
-    const info = parser.parse([StaticLogger.show(false)])
+    const info = parser.parse([StaticLogger.show(false)], mod)
     expect(info.show).toBeFalsy()
   })
 
   it('empty', () => {
-    const info = parser.parse([StaticLogger.empty()])
+    const info = parser.parse([StaticLogger.empty()], mod)
 
     expect(info.messages.length).toEqual(0)
     expect(info.details.empty).toBeTruthy()

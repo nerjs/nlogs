@@ -5,7 +5,7 @@ import { TimeDetails } from '../message/time.details'
 import { IFormatter } from './types'
 
 export class JsonFormatter implements IFormatter {
-  format(info: MessageInfo): any[] {
+  format(info: MessageInfo) {
     const messages = info.messages.map(data => {
       if (typeof data === 'symbol') return data.toString()
       if (!data || typeof data !== 'object') return `${data}`
@@ -16,14 +16,12 @@ export class JsonFormatter implements IFormatter {
       return JSON.stringify(data)
     })
 
-    return [
-      JSON.stringify({
-        meta: info.meta,
-        message: messages.join(' '),
-        details: info.details.toJSON(),
-        '@timestamp': info.timestamp,
-        '@index': info.meta.index,
-      }),
-    ]
+    return JSON.stringify({
+      meta: info.meta,
+      message: messages.join(' '),
+      details: info.details.toJSON(),
+      '@timestamp': info.timestamp,
+      '@index': info.meta.index,
+    })
   }
 }

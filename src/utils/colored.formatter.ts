@@ -1,5 +1,5 @@
 import { formatWithOptions } from 'util'
-import { codes, injectColor } from '../helpers/color'
+import { injectColor } from '../helpers/color'
 import { Mod } from '../helpers/mod'
 import { ErrorDetails } from '../message/error.details'
 import { HighlightMessage } from '../message/highlight.message'
@@ -8,13 +8,8 @@ import { TimeDetails } from '../message/time.details'
 import { IFormatter } from './types'
 
 export class ColoredFormatter implements IFormatter {
-  format(info: MessageInfo, mod: Mod): any[] {
-    return (
-      Object.keys(codes)
-        // .filter(() => false)
-        .map(key => injectColor(key as any, key as any) + '  ')
-        .concat('\n\n', this.meta(info, mod), this.message(info))
-    )
+  format(info: MessageInfo, mod: Mod) {
+    return `${this.meta(info, mod)} this.message(info)`
   }
 
   private meta(info: MessageInfo, mod: Mod) {

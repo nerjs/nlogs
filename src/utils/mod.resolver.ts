@@ -46,7 +46,7 @@ export class ModResolver {
     debug('find app')
     const app = this.findPackage(process.cwd(), 'app')
     if (app) return app
-    return new Mod('app', process.env.npm_package_name || 'app', process.env.npm_package_version || '1.0.0', process.cwd(), new Set())
+    return new Mod('app', process.env.npm_package_name || 'app', process.env.npm_package_version || '1.0.0', process.cwd())
   }
 
   private findPackage(pathname: string, type: 'app' | 'module'): Mod | null {
@@ -55,12 +55,7 @@ export class ModResolver {
       debug(`Find package "${pathname}". package=${pkgPathname}`)
       if (pkgPathname) {
         const pkg = JSON.parse(readFileSync(pkgPathname, 'utf-8'))
-        const deps = new Set<string>()
-        Object.entries(Object.assign({}, pkg.dependencies, pkg.devDependencies)).forEach(([name, version]) => {
-          const id = `${name}@${`${version}`.replace(/^\^/, '')}`
-          deps.add(id)
-        })
-        return new Mod(type, pkg.name, pkg.version, dirname(pkgPathname), deps)
+        return new Mod(type, pkg.name, pkg.version, dirname(pkgPathname))
       }
 
       return null

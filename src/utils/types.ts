@@ -12,7 +12,7 @@ export enum Levels {
 }
 
 export interface IFormatter {
-  format(info: MessageInfo, mod: Mod): any[]
+  format(info: MessageInfo, mod: Mod): string
 }
 
 export type IOutLogger = Partial<ILogger> & Pick<ILogger, 'log'>
