@@ -9,7 +9,7 @@ import { IFormatter } from './types'
 
 export class ColoredFormatter implements IFormatter {
   format(info: MessageInfo, mod: Mod) {
-    return `${this.meta(info, mod)} this.message(info)`
+    return `${this.meta(info, mod)} ${this.message(info)}`
   }
 
   private meta(info: MessageInfo, mod: Mod) {
