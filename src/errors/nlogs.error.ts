@@ -12,6 +12,10 @@ export abstract class NlogsError<C = unknown> extends Error {
     return this.constructor.name
   }
 
+  toString() {
+    return `${this.name}: ${this.message}`
+  }
+
   toJSON() {
     const { name, message, cause, code, stack, ...obj } = this
     return {
