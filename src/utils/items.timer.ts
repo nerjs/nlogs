@@ -33,9 +33,6 @@ export class ItemsTimers extends ItemsManager<number, ItemTimerOptions> {
           level: 'debug',
           messages: [StaticLogger.timeRange(msg.data, Date.now(), `timeEnd${msg.label ? `: ${msg.label}` : ''}`), messages],
         }
-
-      default:
-        return {}
     }
   }
 }

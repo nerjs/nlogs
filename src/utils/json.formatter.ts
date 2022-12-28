@@ -9,7 +9,7 @@ export class JsonFormatter implements IFormatter {
     const messages = info.messages.map(data => {
       if (typeof data === 'symbol') return data.toString()
       if (!data || typeof data !== 'object') return `${data}`
-      if (data instanceof ErrorDetails) return data.toString()
+      if (data instanceof ErrorDetails || data instanceof Error) return data.toString()
       if (data instanceof TimeDetails) return `[${data.label ? `${data.label}: ` : ''}${data.pretty}]`
       if (data instanceof HighlightMessage) return `[${data.text}]`
       if (Array.isArray(data)) return `[${data.join(', ')}]`

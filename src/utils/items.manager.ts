@@ -5,11 +5,10 @@ import { ILogger } from '../helpers/types'
 
 type LogFn = (...msgs: any[]) => void
 
-interface LogItem<D = any> {
+export interface LogItem<D = any> {
   (...args: any[]): void
   id: string
   label: string
-  removed?: boolean
   log(...args: any[]): void
   end(...args: any[]): void
   removeAfter: number
@@ -38,10 +37,13 @@ export interface ItemResult<D> {
 export interface ItemManagerOptions {
   maxCacheTime: number
   checkCacheTimeout: number
+  maxCacheSize: number
 }
 
 export abstract class ItemsManager<D, O extends ItemManagerOptions> {
   private readonly state = new Map<string, LogItem<D>>()
+  private readonly removed = new WeakSet<LogItem<D>>()
+  private tid: NodeJS.Timer
 
   abstract readonly name: string
   protected abstract itemCallback(msg: ItemMsg<D>): ItemResult<D> | ItemResult<D>[]
@@ -54,7 +56,8 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
   }
 
   has(id: string) {
-    return this.state.has(id)
+    if (!this.state.has(id)) return false
+    return !this.removed.has(this.state.get(id))
   }
 
   get(id: string): LogItem<D> {
@@ -66,8 +69,12 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
     return this.state.delete(id)
   }
 
+  clear() {
+    this.state.clear()
+  }
+
   private create(id: string, onLog: LogFn, onEnd: LogFn, label?: string) {
-    const item: LogItem<D> = (...args: any[]) => onLog(...args)
+    const item: LogItem<D> = (...args: any[]) => onEnd(...args)
     item.id = id
     item.label = label
     item.log = onLog
@@ -83,7 +90,7 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
     if (this.has(id)) {
       const sitem = this.get(id)
       this.delete(id)
-      if (!this.isExpired(sitem) && !sitem.removed) {
+      if (!this.isExpired(sitem) && !this.removed.has(sitem)) {
         sitem.end('Auto end (restart)')
       }
       return this.start(label)
@@ -92,18 +99,20 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
     const item = this.create(
       id,
       (...msgs: any[]) => {
-        if (item.removed) return
+        if (this.removed.has(item)) return
         this.logFrom(LogType.LOG, item, msgs)
       },
       (...msgs) => {
+        if (this.removed.has(item)) return
         this.delete(id)
-        if (item.removed) return
-        item.removed = true
+        this.removed.add(item)
         this.logFrom(LogType.END, item, msgs)
       },
       label,
     )
     this.state.set(id, item)
+    if (this.size > this.options.maxCacheSize)
+      this.logger.warn(`The recommended limit for concurrently used ${this.name} has been exceeded`)
     this.logFrom(LogType.START, item, [])
     return item
   }
@@ -134,6 +143,7 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
 
       const arr = Array.isArray(res) ? res : [res]
       for (const result of arr) {
+        if (!result) continue
         if ('data' in result) item.data = result.data
         if (!result.messages) continue
         const method = 'level' in result ? result.level : 'debug'
@@ -155,22 +165,19 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
 
   // autoclear
 
-  private tid: NodeJS.Timer
   private checkItem(item: LogItem) {
-    if (item.removed && this.has(item.id)) this.delete(item.id)
     if (!this.size && this.tid) clearTimeout(this.tid)
-
-    if (!item.removed && !this.tid) this.startTimeoutCheck()
+    if (!this.removed.has(item) && !this.tid) this.startTimeoutCheck()
   }
 
   private startTimeoutCheck() {
-    if (this.tid) clearTimeout(this.tid)
+    // if (this.tid) clearTimeout(this.tid)
     this.tid = setTimeout(() => {
       this.tid = null
 
       this.state.forEach(item => {
         if (+item.removeAfter <= Date.now()) {
-          item.removed = true
+          this.removed.add(item)
           this.delete(item.id)
           this.logger.warn(
             `The ${this.name} with the ${item.label ? `${item.label} label` : `${item.id} id`} was deleted after ${prettyTime(

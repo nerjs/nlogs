@@ -1,9 +1,9 @@
 import { ItemManagerOptions, ItemMsg, ItemResult, ItemsManager } from './items.manager'
 import { StaticLogger } from './static.logger'
 
-export interface ItemTimerOptions extends ItemManagerOptions {}
+export interface ItemCounterOptions extends ItemManagerOptions {}
 
-export class ItemsCounters extends ItemsManager<number, ItemTimerOptions> {
+export class ItemsCounters extends ItemsManager<number, ItemCounterOptions> {
   readonly name = 'timer'
   protected defaultData = 0
 
