@@ -14,6 +14,7 @@ type LogFormatter = {
 export interface ThemeFormatter extends LogFormatter {
   colors: boolean
   depth: number
+  emptyStackLabel: string
   showModule: boolean
   showModuleVersion: boolean
   timestamp: WrapFn
@@ -36,6 +37,7 @@ const defLogTheme = ['trace', 'debug', 'log', 'info', 'warn', 'error'].reduce(
 const defauldTheme: ThemeFormatter = {
   colors: false,
   depth: 5,
+  emptyStackLabel: '-',
   showModule: true,
   showModuleVersion: true,
   timestamp: str => `${str} `,
@@ -48,7 +50,7 @@ const defauldTheme: ThemeFormatter = {
 }
 
 export class StringFormatter implements IFormatter {
-  private readonly theme: ThemeFormatter
+  readonly theme: ThemeFormatter
 
   constructor(theme?: Partial<ThemeFormatter>) {
     this.theme = Object.assign({}, defauldTheme, theme)
@@ -68,8 +70,8 @@ export class StringFormatter implements IFormatter {
     const hours = `${date.getHours()}`.padStart(2, '0')
     const minutes = `${date.getMinutes()}`.padStart(2, '0')
     const seconds = `${date.getSeconds()}`.padStart(2, '0')
-    const ms = date.getMilliseconds() && `${date.getMilliseconds()}`.padStart(3, '0')
-    return this.theme.timestamp(`${hours}:${minutes}:${seconds}${ms ? `.${ms}` : ''}`)
+    const ms = `${date.getMilliseconds()}`.padStart(3, '0')
+    return this.theme.timestamp(`${hours}:${minutes}:${seconds}${ms}`)
   }
 
   private category(info: MessageInfo, mod: Mod) {
@@ -97,7 +99,7 @@ export class StringFormatter implements IFormatter {
     if (!this.hasMessage(info)) return ''
 
     const stacktraces = this.stacktraces(info)
-    const count = info.messages.length + (stacktraces ? 1 : 0) + (info.details.empty ? 0 : 1)
+    const count = info.messages.length
 
     const messages = info.messages.map(msg => {
       if (!msg || typeof msg !== 'object') return msg
@@ -128,7 +130,7 @@ export class StringFormatter implements IFormatter {
   }
 
   private errorDetails(error: ErrorDetails, count: number) {
-    return this.wrapNotOnce(`${error.name}: ${error.message}`, count)
+    return this.wrapNotOnce(error.toString(), count)
   }
 
   private stacktraces(info: MessageInfo) {
@@ -141,7 +143,7 @@ export class StringFormatter implements IFormatter {
 
     ;[info.details._error, ...(info.details._errors || [])].filter(Boolean).forEach(error => add(error.stack, error.toString()))
     ;[info.details._stack, ...(info.details._stacks || [])].filter(Boolean).forEach(stack => {
-      if (Array.isArray(stack)) add(stack, stacktraces.length ? '-' : null)
+      if (Array.isArray(stack)) add(stack, stacktraces.length ? this.theme.emptyStackLabel : null)
       else add(stack.stack, stack.label)
     })
 
@@ -152,10 +154,10 @@ export class StringFormatter implements IFormatter {
   private wrapNotOnce(str: string, count: number, wrapFn?: WrapFn) {
     if (count <= 1) return str
     if (!wrapFn) return this.wrapNotOnce(str, count, this.theme.separator)
-    return count > 1 ? `${wrapFn('[')}${str}${wrapFn(']')}` : str
+    return `${wrapFn('[')}${str}${wrapFn(']')}`
   }
 
   private hasMessage(info: MessageInfo) {
-    return info.messages.length || !info.details.empty
+    return info.messages.length || !info.details.empty || info.details._stack || info.details._stacks
   }
 }
