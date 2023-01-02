@@ -6,7 +6,7 @@ describe('string formatter', () => {
   describe('formatter options', () => {
     it('defaults meta', () => {
       const formatter = new StringFormatter()
-      const str = formatter.format(testParser.parse([], appModule), appModule)
+      const str = formatter.format(testParser.parse([], appModule))
       expect(str).toMatch(defaultMeta.category)
       expect(str).toMatch(new RegExp(defaultMeta.level, 'i'))
     })
@@ -15,13 +15,13 @@ describe('string formatter', () => {
       const formatter = new StringFormatter({
         showModule: false,
       })
-      const str = formatter.format(testParser.parse([], depModule), depModule)
+      const str = formatter.format(testParser.parse([], depModule))
       expect(str).not.toMatch(depModule.name)
     })
 
     it('application module should not be shown', () => {
       const formatter = new StringFormatter()
-      const str = formatter.format(testParser.parse([], appModule), appModule)
+      const str = formatter.format(testParser.parse([], appModule))
       expect(str).not.toMatch(appModule.name)
     })
 
@@ -30,7 +30,7 @@ describe('string formatter', () => {
         showModule: true,
         showModuleVersion: false,
       })
-      const str = formatter.format(testParser.parse([], depModule), depModule)
+      const str = formatter.format(testParser.parse([], depModule))
       expect(str).toMatch(depModule.name)
       expect(str).not.toMatch(depModule.version)
     })
@@ -40,7 +40,7 @@ describe('string formatter', () => {
         showModule: true,
         showModuleVersion: true,
       })
-      const str = formatter.format(testParser.parse([], depModule), depModule)
+      const str = formatter.format(testParser.parse([], depModule))
       expect(str).toMatch(depModule.name)
       expect(str).toMatch(depModule.version)
     })
@@ -50,7 +50,7 @@ describe('string formatter', () => {
       const formatter = new StringFormatter({
         debug: () => wrappedLevel,
       })
-      const str = formatter.format(testParser.parse([StaticLogger.level('debug')], appModule), appModule)
+      const str = formatter.format(testParser.parse([StaticLogger.level('debug')], appModule))
       expect(str).toMatch(wrappedLevel)
     })
   })
@@ -58,17 +58,17 @@ describe('string formatter', () => {
   describe('build message', () => {
     const formatter = new StringFormatter()
     const parse = (msgs: any[]) => testParser.parse(msgs, appModule)
-    const format = (...msgs: any[]) => formatter.format(parse(msgs), appModule)
+    const format = (...msgs: any[]) => formatter.format(parse(msgs))
 
     it('no brackets in a single message', () => {
       const info = parse([new Error('Qwerty error')])
-      const str = formatter.format(info, appModule)
+      const str = formatter.format(info)
       expect(str).not.toMatch(new RegExp(`\\[${info.details._error.toString()}\\]`))
     })
 
     it('brackets for multiple messages', () => {
       const info = parse(['qwerty', new Error('Qwerty error')])
-      const str = formatter.format(info, appModule)
+      const str = formatter.format(info)
       expect(str).toMatch(new RegExp(`\\[${info.details._error.toString()}\\]`))
     })
 
@@ -86,7 +86,7 @@ describe('string formatter', () => {
 
     it('pretty time in message', () => {
       const info = parse([StaticLogger.timeRange(123, 1234)])
-      const str = formatter.format(info, appModule)
+      const str = formatter.format(info)
       expect(str).toMatch(info.timeRange.delta.pretty)
       expect(str).toMatch(info.timeRange.delta.label)
     })
@@ -99,7 +99,7 @@ describe('string formatter', () => {
     it('details in message', () => {
       const info = testParser.parse([{ field: 'qwerty' }], appModule)
       const formatter = new StringFormatter()
-      const str = formatter.format(info, appModule)
+      const str = formatter.format(info)
       expect(str).toMatch('field')
       expect(str).toMatch('qwerty')
     })

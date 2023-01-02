@@ -1,8 +1,6 @@
-import { Mod } from '../../helpers/mod'
+import { appModule, testParser } from '../../helpers/testsHelpers'
 import { ILogger } from '../../helpers/types'
-import { Meta } from '../../message/meta'
 import { ItemsTimers, ItemTimerOptions } from '../items.timer'
-import { Parser } from '../parser'
 import { StringFormatter } from '../string.formatter'
 
 describe('Items timers', () => {
@@ -12,18 +10,9 @@ describe('Items timers', () => {
     maxCacheSize: 10,
     logOnStart: false,
   }
-  const parser = new Parser(
-    {
-      canSingleErrorInDetails: true,
-      canSingleTimeInDetails: true,
-      canSingleTraceInDetails: true,
-    },
-    new Meta('', '', '', '', '', new Date()),
-  )
-  const mod = new Mod('app', '', '', '')
   const formatter = new StringFormatter()
 
-  const log = jest.fn((...args) => formatter.format(parser.parse(args, mod), mod))
+  const log = jest.fn((...args) => formatter.format(testParser.parse(args, appModule)))
   const logger: ILogger = {
     debug: log,
     log: log,

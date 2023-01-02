@@ -56,12 +56,12 @@ export class StringFormatter implements IFormatter {
     this.theme = Object.assign({}, defauldTheme, theme)
   }
 
-  format(info: MessageInfo, mod: Mod): string {
-    return `${this.meta(info, mod)}${this.messages(info)}`
+  format(info: MessageInfo): string {
+    return `${this.meta(info)}${this.messages(info)}`
   }
 
-  private meta(info: MessageInfo, mod: Mod) {
-    return `${this.timestamp(info.meta.timestamp)}${this.theme.separator('[')}${this.category(info, mod)} ${this.level(
+  private meta(info: MessageInfo) {
+    return `${this.timestamp(info.meta.timestamp)}${this.theme.separator('[')}${this.category(info)} ${this.level(
       info,
     )}${this.theme.separator(this.hasMessage(info) ? ']:' : ']')}`
   }
@@ -74,10 +74,10 @@ export class StringFormatter implements IFormatter {
     return this.theme.timestamp(`${hours}:${minutes}:${seconds}${ms}`)
   }
 
-  private category(info: MessageInfo, mod: Mod) {
+  private category(info: MessageInfo) {
     const category = this.theme.category(info.meta.category)
     if (!this.theme.showModule) return category
-    const module = this.module(mod)
+    const module = this.module(info.module)
     if (!module) return category
     return `${module}${this.theme.separator(':')}${category}`
   }
