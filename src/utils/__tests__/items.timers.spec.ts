@@ -1,9 +1,9 @@
 import { Mod } from '../../helpers/mod'
 import { ILogger } from '../../helpers/types'
 import { Meta } from '../../message/meta'
-import { ColoredFormatter } from '../colored.formatter'
 import { ItemsTimers, ItemTimerOptions } from '../items.timer'
 import { Parser } from '../parser'
+import { StringFormatter } from '../string.formatter'
 
 describe('Items timers', () => {
   const options: ItemTimerOptions = {
@@ -21,7 +21,7 @@ describe('Items timers', () => {
     new Meta('', '', '', '', '', new Date()),
   )
   const mod = new Mod('app', '', '', '')
-  const formatter = new ColoredFormatter()
+  const formatter = new StringFormatter()
 
   const log = jest.fn((...args) => formatter.format(parser.parse(args, mod), mod))
   const logger: ILogger = {
