@@ -1,4 +1,9 @@
-import { isMeta } from './symbols'
+import { isMetaInfo, IS_META_INFO, INTERPOLATE, TIMERANGE, TIME, HIGHLIGHT } from './symbols'
+import { MetaInfo } from './types'
+
+const showMetaInfo = [INTERPOLATE, TIMERANGE, TIME, HIGHLIGHT]
+
+const isMeta = (val: any): val is MetaInfo => isMetaInfo(val) && showMetaInfo.includes(val[IS_META_INFO])
 
 type Template = [a: TemplateStringsArray, ...b: any[]]
 

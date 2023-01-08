@@ -1,27 +1,50 @@
-import { ErrorDetails } from '../message/error.details'
-import { HighlightMessage } from '../message/highlight.message'
-import { MessageInfo } from '../message/message.info'
-import { TimeDetails } from '../message/time.details'
+import { Details } from '../message/details'
+import { Meta } from '../message/meta'
 import { IFormatter } from './types'
 
 export class JsonFormatter implements IFormatter {
-  format(info: MessageInfo) {
-    const messages = info.messages.map(data => {
-      if (typeof data === 'symbol') return data.toString()
-      if (!data || typeof data !== 'object') return `${data}`
-      if (data instanceof ErrorDetails || data instanceof Error) return data.toString()
-      if (data instanceof TimeDetails) return `[${data.label ? `${data.label}: ` : ''}${data.pretty}]`
-      if (data instanceof HighlightMessage) return `[${data.text}]`
-      if (Array.isArray(data)) return `[${data.join(', ')}]`
-      return JSON.stringify(data)
-    })
+  symbol(value: symbol): string {
+    return value.toString()
+  }
 
+  bigint(value: bigint): string {
+    return `${value}n`
+  }
+
+  date(value: Date): string {
+    return value.toJSON()
+  }
+
+  array(value: any[]): string {
+    return value.toString()
+  }
+  null(value: null | undefined): string {
+    return `${value}`
+  }
+
+  messages(data: any[]): string {
+    return data.join(' ')
+  }
+
+  time(pretty: string, label?: string): string {
+    return label ? `[${label}: ${pretty}]` : pretty
+  }
+
+  error(name: string, message: string): string {
+    return `[${name}: ${message}]`
+  }
+
+  highlight(text: string): string {
+    return `[${text}]`
+  }
+
+  format(meta: Meta, details: Details, message: string): string {
     return JSON.stringify({
-      meta: info.meta,
-      message: messages.join(' '),
-      details: info.details.toJSON(),
-      '@timestamp': info.timestamp,
-      '@index': info.meta.index,
+      message,
+      meta,
+      details: details.toJSON(),
+      '@timestamp': meta.timestamp,
+      '@index': meta.index,
     })
   }
 }

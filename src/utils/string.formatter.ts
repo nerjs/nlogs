@@ -1,163 +1,123 @@
 import { formatWithOptions } from 'util'
-import { Mod } from '../helpers/mod'
-import { ILogger } from '../helpers/types'
-import { ErrorDetails } from '../message/error.details'
-import { HighlightMessage } from '../message/highlight.message'
-import { MessageInfo } from '../message/message.info'
-import { TimeDetails } from '../message/time.details'
+import { Details } from '../message/details'
+import { Meta } from '../message/meta'
 import { IFormatter } from './types'
 
-export type WrapFn = (str: string) => string
-type LogFormatter = {
-  [key in keyof ILogger]: WrapFn
-}
-export interface ThemeFormatter extends LogFormatter {
-  colors: boolean
-  depth: number
-  emptyStackLabel: string
-  showModule: boolean
-  showModuleVersion: boolean
-  timestamp: WrapFn
-  separator: WrapFn
-  category: WrapFn
-  module: WrapFn
-  highlight: WrapFn
-  time: WrapFn
-  timeLabel?: WrapFn
-}
-
-const noop = s => s
-const defLogTheme = ['trace', 'debug', 'log', 'info', 'warn', 'error'].reduce(
-  (acc, cur) => ({
-    ...acc,
-    [cur]: noop,
-  }),
-  {},
-) as LogFormatter
-const defauldTheme: ThemeFormatter = {
-  colors: false,
-  depth: 5,
-  emptyStackLabel: '-',
-  showModule: true,
-  showModuleVersion: true,
-  timestamp: str => `${str} `,
-  separator: noop,
-  category: noop,
-  module: noop,
-  highlight: noop,
-  time: noop,
-  ...defLogTheme,
-}
-
 export class StringFormatter implements IFormatter {
-  readonly theme: ThemeFormatter
-
-  constructor(theme?: Partial<ThemeFormatter>) {
-    this.theme = Object.assign({}, defauldTheme, theme)
+  symbol(value: symbol) {
+    return value
+  }
+  bigint(value: bigint) {
+    return value
+  }
+  date(value: Date) {
+    return value
+  }
+  array(value: any[]) {
+    return value
+  }
+  null(value: null | undefined) {
+    return value
   }
 
-  format(info: MessageInfo): string {
-    return `${this.meta(info)}${this.messages(info)}`
+  protected separator = ':'
+  protected timestampSeparator = ' '
+  protected brackets = ['[', ']']
+  protected colors = false
+  protected depth = 10
+
+  messages(data: any[]): string {
+    return formatWithOptions(
+      {
+        colors: this.colors,
+      },
+      ...data,
+    )
   }
 
-  private meta(info: MessageInfo) {
-    return `${this.timestamp(info.meta.timestamp)}${this.theme.separator('[')}${this.category(info)} ${this.level(
-      info,
-    )}${this.theme.separator(this.hasMessage(info) ? ']:' : ']')}`
+  time(pretty: string, label?: string): string {
+    return label ? `[${label}: ${pretty}]` : pretty
   }
 
-  private timestamp(date: Date) {
+  error(name: string, message: string): string {
+    return `[${name}: ${message}]`
+  }
+
+  highlight(text: string): string {
+    return `[${text}]`
+  }
+
+  format(meta: Meta, details: Details, message: string): string {
+    const msg = this.prepareMessage(message, details)
+    return `${this.prepareTimestamp(meta.timestamp)}${this.timestampSeparator}${this.brackets[0]}${this.prepareCategory(
+      meta,
+      details,
+    )} ${this.prepareLevel(meta)}${this.brackets[1]}${msg.length ? `${this.separator} ${msg}` : ''}`
+  }
+
+  protected prepareTimestamp(date: Date) {
     const hours = `${date.getHours()}`.padStart(2, '0')
     const minutes = `${date.getMinutes()}`.padStart(2, '0')
     const seconds = `${date.getSeconds()}`.padStart(2, '0')
     const ms = `${date.getMilliseconds()}`.padStart(3, '0')
-    return this.theme.timestamp(`${hours}:${minutes}:${seconds}${ms}`)
+    return `${hours}:${minutes}:${seconds}.${ms}`
   }
 
-  private category(info: MessageInfo) {
-    const category = this.theme.category(info.meta.category)
-    if (!this.theme.showModule) return category
-    const module = this.module(info.module)
-    if (!module) return category
-    return `${module}${this.theme.separator(':')}${category}`
+  protected prepareCategory(meta: Meta, details: Details) {
+    const category = this.prepareCategoryName(meta)
+    const mod = this.prepareModuleName(details)
+    return mod ? `${mod}${this.separator}${category}` : category
   }
 
-  private module(mod: Mod) {
-    if (mod.type === 'app') return null
-    return this.theme.module(this.theme.showModuleVersion ? `${mod.name}@${mod.version}` : mod.name)
+  protected prepareCategoryName(meta: Meta) {
+    return meta.category
   }
 
-  private level(info: MessageInfo) {
-    const lower = info.level.toLowerCase()
-    const level = lower.toUpperCase()
-    const wrap = lower in this.theme && typeof this.theme[lower] === 'function' ? this.theme[lower] : this.theme.log
+  protected prepareModuleName(details: Details) {
+    if (!details.module) return null
 
-    return wrap(level)
+    const { name, version } = details.module
+    return version ? `${name}@${version}` : name
   }
 
-  private messages(info: MessageInfo) {
-    if (!this.hasMessage(info)) return ''
+  protected prepareLevel(meta: Meta) {
+    return meta.level.toUpperCase()
+  }
 
-    const stacktraces = this.stacktraces(info)
-    const count = info.messages.length
+  protected prepareMessage(message: string, details: Details) {
+    if (details.empty && !details.stacks.length && !details.errors.length) return message
+    const messages = [message.trim()]
 
-    const messages = info.messages.map(msg => {
-      if (!msg || typeof msg !== 'object') return msg
-      if (msg instanceof HighlightMessage) return this.wrapNotOnce(this.theme.highlight(msg.text), count)
-      if (msg instanceof TimeDetails) return this.timeDetails(msg, count)
-      if (msg instanceof ErrorDetails) return this.errorDetails(msg, count)
-      return msg
-    })
+    if (!details.empty)
+      messages.push(
+        // ' ',
+        formatWithOptions(
+          {
+            colors: this.colors,
+            depth: details.depth !== undefined ? details.depth : this.depth,
+          },
+          details.details,
+        ),
+      )
 
-    if (!info.details.empty) messages.push(info.details.toClearedJSON())
+    const stacktraces = this.prepareStacktraces(details)
     if (stacktraces) messages.push(stacktraces)
 
-    return formatWithOptions(
-      {
-        colors: this.theme.colors,
-        depth: info.depth ?? this.theme.depth,
-      },
-      ' ',
-      ...messages,
-    )
+    return messages.join(' ')
   }
 
-  private timeDetails(time: TimeDetails, count: number) {
-    const wrapLabel = this.theme.timeLabel || this.theme.highlight
-    return time.label
-      ? this.wrapNotOnce(`${wrapLabel(time.label)}${wrapLabel(':')} ${this.theme.time(time.pretty)}`, count, this.theme.timeLabel)
-      : this.theme.time(time.pretty)
-  }
-
-  private errorDetails(error: ErrorDetails, count: number) {
-    return this.wrapNotOnce(error.toString(), count)
-  }
-
-  private stacktraces(info: MessageInfo) {
+  protected prepareStacktraces(details: Details) {
     const stacktraces: string[] = []
-
     const add = (stack: string[], label?: string) => {
       if (label) stacktraces.push(label)
       stacktraces.push(...stack.map(str => `  ${str}`))
     }
-
-    ;[info.details._error, ...(info.details._errors || [])].filter(Boolean).forEach(error => add(error.stack, error.toString()))
-    ;[info.details._stack, ...(info.details._stacks || [])].filter(Boolean).forEach(stack => {
-      if (Array.isArray(stack)) add(stack, stacktraces.length ? this.theme.emptyStackLabel : null)
+    details.errors.filter(Boolean).forEach(error => add(error.stack, `${error.name}: ${error.message}`))
+    details.stacks.filter(Boolean).forEach(stack => {
+      if (Array.isArray(stack)) add(stack, stacktraces.length ? '==' : null)
       else add(stack.stack, stack.label)
     })
-
     if (stacktraces.length) return `\n${stacktraces.join(`\n`)}`
     return null
-  }
-
-  private wrapNotOnce(str: string, count: number, wrapFn?: WrapFn) {
-    if (count <= 1) return str
-    if (!wrapFn) return this.wrapNotOnce(str, count, this.theme.separator)
-    return `${wrapFn('[')}${str}${wrapFn(']')}`
-  }
-
-  private hasMessage(info: MessageInfo) {
-    return info.messages.length || !info.details.empty || info.details._stack || info.details._stacks
   }
 }

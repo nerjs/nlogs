@@ -1,108 +1,110 @@
 import { MsgNlogsError } from '../errors/msg.nlogs.error'
-import { stackToArray } from '../helpers/stack'
 import { ErrorDetails } from './error.details'
+import { ModDetails } from './mod.details'
 import { TimeDetails } from './time.details'
 import { TimeRange } from './time.range'
 
 interface IDetails {
-  _error?: ErrorDetails
   _errors?: ErrorDetails[]
-  _time?: TimeDetails
   _times?: TimeDetails[]
-  _stack?: string[] | { label: string; stack: string[] }
-  _stacks?: (string[] | { label: string; stack: string[] })[]
+  _stacktraces?: { label?: string; stack: string[] }[]
+  _timeRange?: TimeRange
+  _depth?: number
+  _module?: ModDetails
 
   [key: string]: any
 }
 
-const setTo = (details: IDetails, onceField: string, arrayField: string, data: any, canSingle: boolean) => {
-  if (!details[onceField] && !details[arrayField]) {
-    if (canSingle) {
-      details[onceField] = data
-    } else {
-      details[arrayField] = [data]
-    }
-  } else if (details[onceField] && !details[arrayField]) {
-    details[arrayField] = [details[onceField], data]
-    delete details[onceField]
-  } else if (details[onceField] && details[arrayField]) {
-    details[arrayField].push(details[onceField], data)
-    delete details[onceField]
-  } else if (Array.isArray(details[arrayField])) {
-    details[arrayField].push(data)
-  } else if (!Array.isArray(details[arrayField])) {
-    setTo(details, `_${onceField}`, `_${arrayField}`, data, canSingle)
-  }
-}
-
-export interface DetailsOptions {
-  canSingleErrorInDetails: boolean
-  canSingleTimeInDetails: boolean
-  canSingleTraceInDetails: boolean
-}
-
-export interface Details extends IDetails {
-  _timeRange?: TimeRange
-  _depth?: number
-}
 export class Details {
-  empty: boolean = true
-  private noConsole: Record<string, any>
+  readonly details: Record<string, any> = {}
+  readonly hidden: Record<string, any> = Object.create(null)
+  readonly reserved: IDetails = Object.create(null)
 
-  constructor(private readonly options: DetailsOptions) {}
+  get empty() {
+    return !Object.keys(this.details).length
+  }
+
+  get stacks() {
+    return this.reserved._stacktraces || []
+  }
+
+  get errors() {
+    return this.reserved._errors || []
+  }
+
+  get times() {
+    return this.reserved._times || []
+  }
+
+  get timeRange() {
+    return this.reserved._timeRange
+  }
+
+  get depth() {
+    return this.reserved._depth
+  }
+
+  get module() {
+    return this.reserved._module
+  }
 
   assign(obj: object) {
-    this.empty = false
-    Object.assign(this, obj)
+    for (const key in obj) this.details[key] = obj[key]
   }
 
-  setNoConsole(obj: object) {
-    if (!this.noConsole) this.noConsole = {}
-    Object.assign(this.noConsole, obj)
+  hiddenAssign<D extends IDetails>(obj: D) {
+    for (const key in obj) this.hidden[key] = obj[key]
   }
 
   setError(error: ErrorDetails) {
     if (!(error instanceof ErrorDetails)) return
-    setTo(this, '_error', '_errors', error, this.options.canSingleErrorInDetails)
+    if (!this.reserved._errors) this.reserved._errors = []
+    this.reserved._errors.push(error)
     if (error.hasDetails) {
       this.assign(error.details)
-      this.empty = false
     }
   }
 
   setTime(time: TimeDetails) {
     if (!(time instanceof TimeDetails)) return
-    setTo(this, '_time', '_times', time, this.options.canSingleTimeInDetails)
+    if (!this.reserved._times) this.reserved._times = []
+    this.reserved._times.push(time)
   }
 
-  setStack(stack: string | string[], label?: string) {
-    if (!Array.isArray(stack)) return this.setStack(stackToArray(stack), label)
-    const fst = label ? { stack, label } : stack
-    setTo(this, '_stack', '_stacks', fst, this.options.canSingleTraceInDetails)
+  setStacktrace(stack: string[], label?: string) {
+    if (!this.reserved._stacktraces) this.reserved._stacktraces = []
+    this.reserved._stacktraces.push({ stack, label })
   }
 
   setDepth(depth: number) {
-    this._depth = depth
+    this.reserved._depth = depth
   }
 
   setTimeRange(range: TimeRange) {
-    if (this._timeRange) throw new MsgNlogsError('It is not correct to add a time range twice to the same log.', range)
-    this._timeRange = range
+    if (this.reserved._timeRange) throw new MsgNlogsError('It is not correct to add a time range twice to the same log.', range)
+    this.reserved._timeRange = range
     this.setTime(range.delta)
   }
 
-  toClearedJSON() {
-    const { empty, noConsole, options, ...obj } = this
-    Object.keys(obj)
-      .filter(key => key.startsWith('_'))
-      .forEach(key => {
-        delete obj[key]
-      })
-    return obj
+  setModule(mod: ModDetails): void
+  setModule(name: string, version?: string): void
+  setModule(nameOrMod: string | ModDetails, version?: string): void {
+    if (typeof nameOrMod === 'string') return this.setModule(new ModDetails(nameOrMod, version))
+    this.reserved._module = nameOrMod
   }
 
   toJSON() {
-    const { empty, noConsole, options, ...obj } = this
-    return Object.assign({}, noConsole, obj)
+    // return Object.assign({}, this.hidden, this.details, this.reserved)
+    // return {
+    //   ...this.hidden,
+    //   ...this.details,
+    //   ...this.reserved,
+    // }
+
+    const result: Record<string, any> = {}
+    for (const key in this.hidden) result[key] = this.hidden[key]
+    for (const key in this.details) result[key] = this.hidden[key]
+    for (const key in this.reserved) result[key] = this.hidden[key]
+    return result
   }
 }

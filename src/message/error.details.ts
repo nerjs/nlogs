@@ -26,8 +26,4 @@ export class ErrorDetails {
     const { error, hasDetails, details, ...obj } = this
     return obj
   }
-
-  toString() {
-    return `${this.name}: ${this.message}`
-  }
 }
