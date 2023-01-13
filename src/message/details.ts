@@ -94,17 +94,10 @@ export class Details {
   }
 
   toJSON() {
-    // return Object.assign({}, this.hidden, this.details, this.reserved)
-    // return {
-    //   ...this.hidden,
-    //   ...this.details,
-    //   ...this.reserved,
-    // }
-
     const result: Record<string, any> = {}
     for (const key in this.hidden) result[key] = this.hidden[key]
-    for (const key in this.details) result[key] = this.hidden[key]
-    for (const key in this.reserved) result[key] = this.hidden[key]
+    for (const key in this.details) result[key] = this.details[key]
+    for (const key in this.reserved) result[key] = this.reserved[key]
     return result
   }
 }

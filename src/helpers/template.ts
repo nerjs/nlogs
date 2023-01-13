@@ -3,7 +3,7 @@ import { MetaInfo } from './types'
 
 const showMetaInfo = [INTERPOLATE, TIMERANGE, TIME, HIGHLIGHT]
 
-const isMeta = (val: any): val is MetaInfo => isMetaInfo(val) && showMetaInfo.includes(val[IS_META_INFO])
+const isMeta = (val: any): val is MetaInfo => isMetaInfo(val) && !showMetaInfo.includes(val[IS_META_INFO])
 
 type Template = [a: TemplateStringsArray, ...b: any[]]
 
@@ -28,6 +28,17 @@ export const transformTemplate = ([tmp, ...args]: Template) => {
 
   const { messages, meta } = arr.reduce(
     (acc, cur, idx) => {
+      if (!idx && typeof cur === 'string') {
+        acc.messages.push(cur.replace(/^([\s]+)?\n/, ''))
+        return acc
+      }
+
+      if (idx === arr.length - 1 && typeof cur === 'string') {
+        console.log({ cur })
+        acc.messages.push(cur.replace(/[\s\n]+$/, ''))
+        return acc
+      }
+
       if (!isMeta(cur)) {
         acc.messages.push(cur)
         return acc

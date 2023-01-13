@@ -1,18 +1,4 @@
 export class Meta {
-  #show: boolean = true
-  get show() {
-    return this.#show
-  }
-  set show(val: boolean) {
-    this.#show = val
-  }
-  #index?: string
-  get index() {
-    return this.#index
-  }
-  set index(val: string) {
-    this.#index = val
-  }
   constructor(
     readonly project: string,
     readonly service: string,
@@ -20,10 +6,8 @@ export class Meta {
     readonly level: string,
     readonly traceId: string,
     readonly timestamp: Date,
-    index?: string,
-  ) {
-    this.index = index
-  }
+    readonly index?: string,
+  ) {}
 
   set<K extends keyof Meta>(key: K, value: Meta[K]) {
     Object.assign(this, {
