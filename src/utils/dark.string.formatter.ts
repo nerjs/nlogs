@@ -1,5 +1,6 @@
 import { injectColor } from '../helpers/color'
 import { Details } from '../message/details'
+import { LogInfo } from '../message/log.info'
 import { Meta } from '../message/meta'
 import { StringFormatter } from './string.formatter'
 
@@ -21,9 +22,9 @@ export class DarkStringFormatter extends StringFormatter {
     return injectColor(text, 'bold')
   }
 
-  time(pretty: string, label?: string): string {
+  time(pretty: string, label: string | null, info: LogInfo): string {
     const time = injectColor(pretty, ['brightYellow'])
-    return label ? `${injectColor(`[${label}:`, 'yellow')} ${time}${injectColor(']', 'yellow')}` : time
+    return label ? this.wrap(`${injectColor(`${label}:`, 'yellow')} ${time}`, info.messages.length) : time
   }
 
   protected prepareTimestamp(date: Date): string {

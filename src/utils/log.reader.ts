@@ -24,130 +24,127 @@ import {
 } from '../helpers/symbols'
 import { TimeRange } from '../message/time.range'
 import { MetaInfo } from '../helpers/types'
-import { Details } from '../message/details'
 import { Meta } from '../message/meta'
 import { TimeDetails } from '../message/time.details'
 import { IFormatter } from './types'
 import { ModDetails } from '../message/mod.details'
 import { stackToArray } from '../helpers/stack'
 import { ErrorDetails } from '../message/error.details'
+import { LogInfo } from '../message/log.info'
 
 export class LogReader {
-  constructor(private readonly meta: Meta, private readonly formatter: IFormatter) {}
+  constructor(private readonly formatter: IFormatter) {}
 
-  read(...data: any[]) {
-    return this.parse(data)
-  }
-
-  parse(data: any[]) {
-    const meta = this.meta.clone()
-    const details = new Details()
-    const messages: any[] = []
+  read(meta: Meta, data: any[]) {
+    const info = new LogInfo(meta.clone())
 
     for (const msg of data) {
-      if (msg == null) messages.push(this.formatter.null(msg))
-      else if (typeof msg === 'symbol') messages.push(this.formatter.symbol(msg))
-      else if (typeof msg === 'bigint') messages.push(this.formatter.bigint(msg))
-      else if (isMetaInfo(msg)) this.metaInfo(msg, messages, meta, details)
-      else if (msg instanceof Error) this.setError(details, messages, new ErrorDetails(msg))
-      else if (msg instanceof Date) messages.push(this.formatter.date(msg))
-      else if (Array.isArray(msg)) messages.push(this.formatter.array(msg))
-      else if (msg && typeof msg === 'object') details.assign(msg)
-      else messages.push(msg)
+      if (msg == null) info.push(this.formatter.null(msg, info))
+      else if (typeof msg === 'symbol') info.push(this.formatter.symbol(msg, info))
+      else if (typeof msg === 'bigint') info.push(this.formatter.bigint(msg, info))
+      else if (isMetaInfo(msg)) this.metaInfo(msg, info)
+      else if (msg instanceof Error) this.setError(info, new ErrorDetails(msg))
+      else if (msg instanceof Date) info.push(this.formatter.date(msg, info))
+      else if (Array.isArray(msg)) info.push(this.formatter.array(msg, info))
+      else if (msg && typeof msg === 'object') info.details.assign(msg)
+      else if (typeof msg === 'string' && !msg) continue
+      else info.push(msg)
     }
 
-    const message = this.formatter.messages(messages)
-    return this.formatter.format(meta, details, message)
+    for (const idx of info.entities.time)
+      info.messages[idx] = this.formatter.time(info.messages[idx].pretty, info.messages[idx].label || null, info)
+    for (const idx of info.entities.error)
+      info.messages[idx] = this.formatter.error(info.messages[idx].name, info.messages[idx].message, info)
+    for (const idx of info.entities.highlight) info.messages[idx] = this.formatter.highlight(info.messages[idx], info)
+
+    info.message = this.formatter.messages(info.messages, info)
+
+    return info
   }
 
-  private metaInfo(msg: MetaInfo, messages: any[], meta: Meta, details: Details) {
+  private metaInfo(msg: MetaInfo, info: LogInfo) {
     switch (msg[IS_META_INFO]) {
       case EMPTY:
         return
       case INTERPOLATE:
-        return (msg[META_VALUE] || []).forEach(val => this.metaInfo(val, messages, meta, details))
+        return (msg[META_VALUE] || []).forEach(val => this.metaInfo(val, info))
       case SHOW:
-        meta.set('show', msg[META_VALUE] === undefined || !!msg[META_VALUE])
+        info.show = msg[META_VALUE] === undefined || !!msg[META_VALUE]
         break
       case DEPTH:
-        details.setDepth(msg[META_VALUE])
+        info.details.setDepth(msg[META_VALUE])
         break
 
       case HIDDEN_DETAILS:
       case NO_CONSOLE:
-        details.hiddenAssign(msg[META_VALUE])
+        info.details.hiddenAssign(msg[META_VALUE])
         break
 
       case DETAILS:
-        details.assign(msg[META_VALUE])
+        info.details.assign(msg[META_VALUE])
         break
 
       case PROJECT:
-        meta.set('project', msg[META_VALUE])
+        info.meta.set('project', msg[META_VALUE])
         break
       case SERVICE:
-        meta.set('service', msg[META_VALUE])
+        info.meta.set('service', msg[META_VALUE])
         break
       case CATEGORY:
-        meta.set('category', msg[META_VALUE])
+        info.meta.set('category', msg[META_VALUE])
         break
       case LEVEL:
-        meta.set('level', msg[META_VALUE])
+        info.meta.set('level', msg[META_VALUE])
         break
       case TRACE_ID:
-        meta.set('traceId', msg[META_VALUE])
+        info.meta.set('traceId', msg[META_VALUE])
         break
       case INDEX:
-        meta.set('index', msg[META_VALUE])
+        info.index = msg[META_VALUE]
         break
       case TIMESTAMP:
-        meta.set('timestamp', msg[META_VALUE])
+        info.meta.set('timestamp', msg[META_VALUE])
         break
 
       case MODULE:
-        return this.setModule(details, msg[META_VALUE])
+        return this.setModule(info, msg[META_VALUE])
 
       case TIME:
-        return this.setTime(details, messages, msg[META_VALUE])
+        return this.setTime(info, msg[META_VALUE])
       case TIMERANGE:
-        return this.setTimeRange(details, messages, msg[META_VALUE])
+        return this.setTimeRange(info, msg[META_VALUE])
       case HIGHLIGHT:
-        return this.setHighlight(messages, msg[META_VALUE])
+        return this.setHighlight(info, msg[META_VALUE])
       case STACKTRACE:
-        return this.setStacktrace(details, msg[META_VALUE])
+        return this.setStacktrace(info, msg[META_VALUE])
     }
   }
 
-  private setTime(details: Details, messages: any[], value: any) {
+  private setTime(info: LogInfo, value: any) {
     if (value instanceof TimeDetails) {
-      details.setTime(value)
-      const str = this.formatter.time(value.pretty, value.label)
-      messages.push(str)
+      info.details.setTime(value)
+      info.entity('time', value)
     }
   }
 
-  private setTimeRange(details: Details, messages: any[], value: any) {
+  private setTimeRange(info: LogInfo, value: any) {
     if (value instanceof TimeRange) {
-      details.setTimeRange(value)
-      const str = this.formatter.time(value.delta.pretty, value.delta.label)
-      messages.push(str)
+      info.details.setTimeRange(value)
+      info.entity('time', value)
     }
   }
 
-  private setModule(details: Details, value: any) {
-    if (value instanceof ModDetails) details.setModule(value)
+  private setModule(info: LogInfo, value: any) {
+    if (value instanceof ModDetails) info.details.setModule(value)
   }
 
-  private setHighlight(messages: any[], value: any) {
-    if (typeof value === 'string' && value.length) {
-      const str = this.formatter.highlight(value)
-      messages.push(str)
-    }
+  private setHighlight(info: LogInfo, value: any) {
+    if (typeof value === 'string' && value.length) info.entity('highlight', value)
   }
 
-  private setStacktrace(details: Details, value: any) {
-    if (typeof value === 'string') return this.setStacktrace(details, { stack: stackToArray(value) })
-    if (Array.isArray(value)) return this.setStacktrace(details, { stack: value })
+  private setStacktrace(info: LogInfo, value: any) {
+    if (typeof value === 'string') return this.setStacktrace(info, { stack: stackToArray(value) })
+    if (Array.isArray(value)) return this.setStacktrace(info, { stack: value })
     if (typeof value !== 'object' || !value.stack) return
     if (
       !value.label &&
@@ -159,14 +156,13 @@ export class LogReader {
       value.label = value.stack.shift()
     }
 
-    details.setStacktrace(value.stack, value.label)
+    info.details.setStacktrace(value.stack, value.label)
   }
 
-  private setError(details: Details, messages: any[], value: any) {
+  private setError(info: LogInfo, value: any) {
     if (value instanceof ErrorDetails) {
-      details.setError(value)
-      const str = this.formatter.error(value.name, value.message)
-      messages.push(str)
+      info.details.setError(value)
+      info.entity('error', value)
     }
   }
 }

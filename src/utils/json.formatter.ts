@@ -1,5 +1,4 @@
-import { Details } from '../message/details'
-import { Meta } from '../message/meta'
+import { LogInfo } from '../message/log.info'
 import { IFormatter } from './types'
 
 export class JsonFormatter implements IFormatter {
@@ -38,13 +37,13 @@ export class JsonFormatter implements IFormatter {
     return `[${text}]`
   }
 
-  format(meta: Meta, details: Details, message: string): string {
+  format(info: LogInfo): string {
     return JSON.stringify({
-      message,
-      meta,
-      details: details.toJSON(),
-      '@timestamp': meta.timestamp,
-      '@index': meta.index,
+      message: info.message,
+      meta: info.meta,
+      details: info.details.toJSON(),
+      '@timestamp': info.meta.timestamp,
+      '@index': info.index,
     })
   }
 }

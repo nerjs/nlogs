@@ -1,6 +1,5 @@
 import { ILogger } from '../helpers/types'
-import { Details } from '../message/details'
-import { Meta } from '../message/meta'
+import { LogInfo } from '../message/log.info'
 
 export enum Levels {
   error,
@@ -12,17 +11,17 @@ export enum Levels {
 }
 
 export interface IFormatter {
-  format(meta: Meta, details: Details, message: string): string
-  messages(data: any[]): string
-  time(pretty: string, label?: string): string
-  error(name: string, message: string): string
-  highlight(text: string): string
+  format(info: LogInfo): string
+  messages(data: any[], info: LogInfo): string
+  time(pretty: string, label: string | null, info: LogInfo): string
+  error(name: string, message: string, info: LogInfo): string
+  highlight(text: string, info: LogInfo): string
 
-  symbol(value: symbol): string | symbol
-  bigint(value: bigint): string | bigint
-  date(value: Date): string | Date
-  array(value: any[]): string | any[]
-  null(value?: null | undefined): string | null | undefined
+  symbol(value: symbol, info: LogInfo): string | symbol
+  bigint(value: bigint, info: LogInfo): string | bigint
+  date(value: Date, info: LogInfo): string | Date
+  array(value: any[], info: LogInfo): string | any[]
+  null(value: null | undefined, info: LogInfo): string | null | undefined
 }
 
 export type IOutLogger = Partial<ILogger> & Pick<ILogger, 'log'>

@@ -1,5 +1,6 @@
 import { formatWithOptions } from 'util'
 import { Details } from '../message/details'
+import { LogInfo } from '../message/log.info'
 import { Meta } from '../message/meta'
 import { IFormatter } from './types'
 
@@ -35,24 +36,28 @@ export class StringFormatter implements IFormatter {
     )
   }
 
-  time(pretty: string, label?: string): string {
-    return label ? `[${label}: ${pretty}]` : pretty
+  time(pretty: string, label: string | null, info: LogInfo): string {
+    return label ? this.wrap(`${label}: ${pretty}`, info.messages.length) : pretty
   }
 
-  error(name: string, message: string): string {
-    return `[${name}: ${message}]`
+  error(name: string, message: string, info: LogInfo): string {
+    return this.wrap(`${name}: ${message}`, info.messages.length)
   }
 
-  highlight(text: string): string {
-    return `[${text}]`
+  highlight(text: string, info: LogInfo): string {
+    return this.wrap(text, info.messages.length)
   }
 
-  format(meta: Meta, details: Details, message: string): string {
-    const msg = this.prepareMessage(message, details)
-    return `${this.prepareTimestamp(meta.timestamp)}${this.timestampSeparator}${this.brackets[0]}${this.prepareCategory(
-      meta,
-      details,
-    )} ${this.prepareLevel(meta)}${this.brackets[1]}${msg.length ? `${this.separator} ${msg}` : ''}`
+  protected wrap(str: string, count: number) {
+    return count > 1 ? `${this.brackets[0]}${str}${this.brackets[1]}` : str
+  }
+
+  format(info: LogInfo): string {
+    const msg = this.prepareMessage(info.message, info.details)
+    return `${this.prepareTimestamp(info.meta.timestamp)}${this.timestampSeparator}${this.brackets[0]}${this.prepareCategory(
+      info.meta,
+      info.details,
+    )} ${this.prepareLevel(info.meta)}${this.brackets[1]}${msg.length ? `${this.separator} ${msg}` : ''}`
   }
 
   protected prepareTimestamp(date: Date) {
