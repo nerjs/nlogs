@@ -25,7 +25,7 @@ export class JsonFormatter implements IFormatter {
     return data.join(' ')
   }
 
-  time(pretty: string, label?: string): string {
+  time(pretty: string, label?: string | null): string {
     return label ? `[${label}: ${pretty}]` : pretty
   }
 

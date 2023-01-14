@@ -1,140 +1,91 @@
-import { Mod } from '../../helpers/mod'
-import { Details, DetailsOptions } from '../../message/details'
-import { ErrorDetails } from '../../message/error.details'
-import { HighlightMessage } from '../../message/highlight.message'
-import { MessageInfo } from '../../message/message.info'
-import { Meta } from '../../message/meta'
-import { TimeDetails } from '../../message/time.details'
+import { meta } from '../../helpers/testHelpers'
 import { JsonFormatter } from '../json.formatter'
+import { LogReader } from '../log.reader'
+import { StaticLogger } from '../static.logger'
 
-describe('json formatter', () => {
-  const meta = new Meta('project', 'service', 'category', 'level', 'traceId', new Date(), 'module', 'index')
-  const detailsOptions: DetailsOptions = {
-    canSingleErrorInDetails: true,
-    canSingleTimeInDetails: true,
-    canSingleTraceInDetails: true,
-  }
-  const mod = new Mod('app', 'name', 'v1', 'pathname')
-  let info: MessageInfo
+describe('JSON formatter', () => {
   const formatter = new JsonFormatter()
-  beforeEach(() => {
-    info = new MessageInfo(meta, new Details(detailsOptions), mod)
-  })
 
-  it('The formatter should return valid JSON', () => {
-    const str = formatter.format(info)
-    expect(str).toEqual(expect.any(String))
-    expect(() => JSON.parse(str)).not.toThrow()
-  })
+  describe('prepare types', () => {
+    it('time', () => {
+      expect(formatter.time('pretty')).toMatch('pretty')
+      expect(formatter.time('pretty', 'label')).toMatch('label')
+    })
 
-  it('all base fields', () => {
-    const obj = JSON.parse(formatter.format(info))
+    it('error', () => {
+      expect(formatter.error('name', 'message')).toMatch('message')
+    })
 
-    expect(obj.meta).toBeDefined()
-    expect(obj.message).toBeDefined()
-    expect(obj.details).toBeDefined()
-    expect(obj['@timestamp']).toBeDefined()
-  })
+    it('highlight', () => {
+      expect(formatter.highlight('highlight text')).toMatch('highlight text')
+    })
 
-  it('metadata core fields', () => {
-    const obj = JSON.parse(formatter.format(info))
+    it('symbol', () => {
+      expect(formatter.symbol(Symbol())).toEqual(expect.any(String))
+    })
 
-    ;['project', 'service', 'category', 'level', 'traceId'].forEach(key => {
-      expect(obj.meta[key]).toEqual(meta[key])
+    it('bigint', () => {
+      expect(formatter.bigint(123n)).toEqual(expect.any(String))
+    })
+
+    it('date', () => {
+      expect(formatter.date(new Date())).toEqual(expect.any(String))
+    })
+
+    it('array', () => {
+      expect(formatter.array([1, 2, 3])).toEqual(expect.any(String))
+    })
+
+    it('null', () => {
+      expect(formatter.null(null)).toEqual(expect.any(String))
+      expect(formatter.null(undefined)).toEqual(expect.any(String))
     })
   })
 
-  it('correct timestamp', () => {
-    const obj = JSON.parse(formatter.format(info))
-    const timestamp = meta.timestamp.toJSON()
+  it('message', () => {
+    const messages = ['qwerty', 123, true, false]
+    const message = formatter.messages(messages)
 
-    expect(obj.meta.timestamp).toEqual(timestamp)
-    expect(obj['@timestamp']).toEqual(timestamp)
+    for (const val of messages) expect(message).toMatch(`${val}`)
   })
 
-  it('correct index', () => {
-    const obj = JSON.parse(formatter.format(info))
+  describe('format', () => {
+    const reader = new LogReader(formatter)
 
-    expect(obj.meta.index).toEqual(meta.index)
-    expect(obj['@index']).toEqual(meta.index)
-  })
-
-  it('correct details', () => {
-    const det = { field: 'qwerty' }
-    info.details.assign(det)
-    const obj = JSON.parse(formatter.format(info))
-
-    expect(obj.details).toEqual(
-      expect.objectContaining({
-        _module: mod.toJSON(),
-        ...det,
-      }),
-    )
-  })
-
-  describe('format message', () => {
-    it('symbol in message', () => {
-      info.push(Symbol('test symbol'))
-      const { message } = JSON.parse(formatter.format(info))
-      expect(message).toMatch('test symbol')
+    it('correct json', () => {
+      const info = reader.read(meta, [])
+      const str = formatter.format(info)
+      expect(() => JSON.stringify(str)).not.toThrow()
     })
 
-    it('error in message', () => {
-      const err = new Error('qwerty')
-      const ed = new ErrorDetails(err)
-      info.push(err, ed)
-      const { message } = JSON.parse(formatter.format(info))
-      expect(message).toMatch(err.toString())
-      expect(message).toMatch(ed.toString())
+    it('correct message', () => {
+      const info = reader.read(meta, ['qwerty', 123, 123n])
+      const obj = JSON.parse(formatter.format(info))
+      expect(obj.message).toEqual(info.message)
     })
 
-    it('date in message', () => {
-      const date = new Date()
-      info.push(date)
-      const { message } = JSON.parse(formatter.format(info))
-      expect(message).toMatch(JSON.stringify(date))
+    it('correct meta', () => {
+      const info = reader.read(meta, ['qwerty', 123, 123n])
+      const obj = JSON.parse(formatter.format(info))
+      expect(obj.meta).toEqual(expect.objectContaining(JSON.parse(JSON.stringify(info.meta))))
     })
 
-    it('pretty time in message', () => {
-      const time = new TimeDetails(100)
-      info.push(time)
-      const { message } = JSON.parse(formatter.format(info))
-      expect(message).toMatch(time.pretty)
+    it('correct details', () => {
+      const info = reader.read(meta, ['qwerty', 123, 123n])
+      const obj = JSON.parse(formatter.format(info))
+      expect(obj.details).toEqual(info.details.toJSON())
     })
 
-    it('pretty time in message with label', () => {
-      const time = new TimeDetails(100, 'label')
-      info.push(time)
-      const { message } = JSON.parse(formatter.format(info))
-      expect(message).toMatch(time.label)
+    it('correct timestamp', () => {
+      const info = reader.read(meta, [])
+      const obj = JSON.parse(formatter.format(info))
+      expect(obj['@timestamp']).toEqual(info.meta.timestamp.toJSON())
     })
 
-    it('Highlight text in message', () => {
-      const text = new HighlightMessage('text')
-      info.push(text)
-      const { message } = JSON.parse(formatter.format(info))
-      expect(message).toMatch(text.text)
-    })
-
-    it('array in messages', () => {
-      const arr = [1, 'qwerty', 'test']
-      info.push(arr)
-      const { message } = JSON.parse(formatter.format(info))
-
-      arr.forEach(val => {
-        expect(message).toMatch(`${val}`)
-      })
-    })
-
-    it('other types in message', () => {
-      info.push(1, null, true, false, undefined, 'string')
-      const { message } = JSON.parse(formatter.format(info))
-      expect(message).toMatch('1')
-      expect(message).toMatch('null')
-      expect(message).toMatch('true')
-      expect(message).toMatch('false')
-      expect(message).toMatch('undefined')
-      expect(message).toMatch('string')
+    it('correct index', () => {
+      const info = reader.read(meta, [StaticLogger.index('current index')])
+      const obj = JSON.parse(formatter.format(info))
+      expect(obj['@index']).toEqual(info.index)
     })
   })
 })

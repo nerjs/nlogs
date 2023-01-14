@@ -38,7 +38,20 @@ export class LogReader {
   read(meta: Meta, data: any[]) {
     const info = new LogInfo(meta.clone())
 
-    for (const msg of data) {
+    this.readMessages(data, info)
+
+    for (const idx of info.entities.time)
+      info.messages[idx] = this.formatter.time(info.messages[idx].pretty, info.messages[idx].label || null, info)
+    for (const idx of info.entities.error)
+      info.messages[idx] = this.formatter.error(info.messages[idx].name, info.messages[idx].message, info)
+    for (const idx of info.entities.highlight) info.messages[idx] = this.formatter.highlight(info.messages[idx], info)
+
+    info.message = this.formatter.messages(info.messages, info)
+    return info
+  }
+
+  private readMessages(msgs: any[], info: LogInfo) {
+    for (const msg of msgs) {
       if (msg == null) info.push(this.formatter.null(msg, info))
       else if (typeof msg === 'symbol') info.push(this.formatter.symbol(msg, info))
       else if (typeof msg === 'bigint') info.push(this.formatter.bigint(msg, info))
@@ -50,16 +63,6 @@ export class LogReader {
       else if (typeof msg === 'string' && !msg) continue
       else info.push(msg)
     }
-
-    for (const idx of info.entities.time)
-      info.messages[idx] = this.formatter.time(info.messages[idx].pretty, info.messages[idx].label || null, info)
-    for (const idx of info.entities.error)
-      info.messages[idx] = this.formatter.error(info.messages[idx].name, info.messages[idx].message, info)
-    for (const idx of info.entities.highlight) info.messages[idx] = this.formatter.highlight(info.messages[idx], info)
-
-    info.message = this.formatter.messages(info.messages, info)
-
-    return info
   }
 
   private metaInfo(msg: MetaInfo, info: LogInfo) {
@@ -67,7 +70,7 @@ export class LogReader {
       case EMPTY:
         return
       case INTERPOLATE:
-        return (msg[META_VALUE] || []).forEach(val => this.metaInfo(val, info))
+        return this.readMessages(msg[META_VALUE] || [], info)
       case SHOW:
         info.show = msg[META_VALUE] === undefined || !!msg[META_VALUE]
         break
@@ -130,7 +133,7 @@ export class LogReader {
   private setTimeRange(info: LogInfo, value: any) {
     if (value instanceof TimeRange) {
       info.details.setTimeRange(value)
-      info.entity('time', value)
+      info.entity('time', value.delta)
     }
   }
 
@@ -144,7 +147,7 @@ export class LogReader {
 
   private setStacktrace(info: LogInfo, value: any) {
     if (typeof value === 'string') return this.setStacktrace(info, { stack: stackToArray(value) })
-    if (Array.isArray(value)) return this.setStacktrace(info, { stack: value })
+    if (Array.isArray(value)) return this.setStacktrace(info, { stack: [...value] })
     if (typeof value !== 'object' || !value.stack) return
     if (
       !value.label &&
@@ -153,7 +156,9 @@ export class LogReader {
       typeof value.stack[0] === 'string' &&
       !value.stack[0].startsWith('at')
     ) {
-      value.label = value.stack.shift()
+      const stack = [...value.stack]
+      const label = stack.shift()
+      return this.setStacktrace(info, { label, stack })
     }
 
     info.details.setStacktrace(value.stack, value.label)

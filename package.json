@@ -6,7 +6,7 @@
   "author": "nerjs <karifan.stap@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint ./src/*.ts",
+    "lint": "eslint .",
     "clear": "rm -rf ./dist",
     "build": "tsc --build",
     "watch": "tsc --watch",

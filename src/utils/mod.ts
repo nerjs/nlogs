@@ -8,12 +8,4 @@ export class Mod extends ModDetails {
   get id() {
     return `${this.name}@${this.version}`
   }
-
-  toJSON() {
-    const { pathname, id, ...obj } = this
-    return {
-      id,
-      ...obj,
-    }
-  }
 }

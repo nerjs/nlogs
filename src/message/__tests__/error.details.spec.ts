@@ -17,7 +17,7 @@ describe('error details', () => {
     const testError = new Error('message')
     const error = new ErrorDetails(testError)
     error.stack.forEach(str => {
-      expect(testError.stack.includes(str)).toBeTruthy()
+      expect(testError.stack?.includes(str)).toBeTruthy()
     })
   })
 
@@ -56,14 +56,6 @@ describe('error details', () => {
     expect(json.error).not.toBeDefined()
     expect(json.hasDetails).not.toBeDefined()
     expect(json.details).not.toBeDefined()
-  })
-
-  it('to string', () => {
-    const testError = new FieldError('message')
-    const error = new ErrorDetails(testError)
-
-    expect(error.toString()).toMatch(error.name)
-    expect(error.toString()).toMatch(error.message)
   })
 
   it('no error argument', () => {

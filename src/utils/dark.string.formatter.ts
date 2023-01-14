@@ -5,10 +5,10 @@ import { Meta } from '../message/meta'
 import { StringFormatter } from './string.formatter'
 
 export class DarkStringFormatter extends StringFormatter {
-  protected timestampSeparator = ''
-  protected separator = injectColor(':', 'gray')
-  protected brackets = [injectColor('[', 'gray'), injectColor(']', 'gray')]
-  protected colors = true
+  readonly timestampSeparator = ''
+  readonly separator = injectColor(':', 'gray')
+  readonly brackets: [string, string] = [injectColor('[', 'gray'), injectColor(']', 'gray')]
+  readonly colors = true
   protected levels = {
     log: str => injectColor(str, 'white'),
     trace: str => injectColor(str, 'blue'),

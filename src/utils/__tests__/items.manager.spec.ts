@@ -1,4 +1,4 @@
-import { ILogger } from '../../helpers/types'
+import { clearMocks, testLogger } from '../../helpers/testHelpers'
 import { ItemManagerOptions, ItemMsg, ItemResult, ItemsManager, LogItem, LogType } from '../items.manager'
 
 describe('items manager', () => {
@@ -14,19 +14,11 @@ describe('items manager', () => {
     maxCacheSize: 10,
   }
 
-  let logger: ILogger
   let items: Items
   beforeEach(() => {
     if (items) items.clear()
-
-    logger = {
-      debug: jest.fn(),
-      log: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-    }
-    items = new Items(logger, options)
+    clearMocks()
+    items = new Items(testLogger, options)
   })
 
   beforeAll(() => {
@@ -84,7 +76,7 @@ describe('items manager', () => {
     })
 
     it('Calling start when the previous duplicate is complete', () => {
-      items = new Items(logger, {
+      items = new Items(testLogger, {
         ...options,
         checkCacheTimeout: options.maxCacheTime * 2,
       })
@@ -97,20 +89,20 @@ describe('items manager', () => {
     it('recomended limit', () => {
       for (let i = 0; i < options.maxCacheSize + 1; i++) items.start()
 
-      expect(logger.warn).toHaveBeenCalled()
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching('limit'))
+      expect(testLogger.warn).toHaveBeenCalled()
+      expect(testLogger.warn).toHaveBeenCalledWith(expect.stringMatching('limit'))
     })
   })
 
   describe('call log method', () => {
     it('empty label', () => {
       items.log('')
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching('empty'))
+      expect(testLogger.warn).toHaveBeenCalledWith(expect.stringMatching('empty'))
     })
 
     it('A non-existent element', () => {
       items.log('qwerty')
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching('not found'))
+      expect(testLogger.warn).toHaveBeenCalledWith(expect.stringMatching('not found'))
     })
 
     it('call existent', () => {
@@ -124,12 +116,12 @@ describe('items manager', () => {
   describe('call end method', () => {
     it('empty label', () => {
       items.end('')
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching('empty'))
+      expect(testLogger.warn).toHaveBeenCalledWith(expect.stringMatching('empty'))
     })
 
     it('A non-existent element', () => {
       items.end('qwerty')
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching('not found'))
+      expect(testLogger.warn).toHaveBeenCalledWith(expect.stringMatching('not found'))
     })
 
     it('call existent', () => {
@@ -146,8 +138,7 @@ describe('items manager', () => {
     beforeEach(() => {
       item = items.start()
       items.itemCallback.mockClear()
-
-      Object.values(logger).forEach(fn => fn.mockClear())
+      clearMocks()
     })
 
     it('call log with args', () => {
@@ -195,21 +186,28 @@ describe('items manager', () => {
     })
 
     it('missing result', () => {
+      // @ts-ignore
       items.itemCallback.mockImplementation(() => undefined)
       item.log()
-      expect(logger.debug).not.toHaveBeenCalled()
+      expect(testLogger.debug).not.toHaveBeenCalled()
     })
 
     it('missing result messages', () => {
       items.itemCallback.mockImplementation(() => ({}))
       item.log()
-      expect(logger.debug).not.toHaveBeenCalled()
+      expect(testLogger.debug).not.toHaveBeenCalled()
     })
 
-    it('level result messages', () => {
-      items.itemCallback.mockImplementation(() => ({ level: 'info', messages: ['any'] }))
-      item()
-      expect(logger.info).toHaveBeenCalled()
+    describe('levels', () => {
+      const levels = ['log', 'trace', 'debug', 'info', 'warn', 'error']
+
+      for (const level of levels) {
+        it(`level (${level}) result messages`, () => {
+          items.itemCallback.mockImplementation(() => ({ level: level as any, messages: ['any'] }))
+          item()
+          expect(testLogger[level]).toHaveBeenCalled()
+        })
+      }
     })
 
     it('warning if throw callback', () => {
@@ -217,7 +215,7 @@ describe('items manager', () => {
         throw new Error('test')
       })
       item()
-      expect(logger.error).toHaveBeenCalledWith(expect.stringMatching('Error'), expect.any(Error))
+      expect(testLogger.error).toHaveBeenCalledWith(expect.stringMatching('Error'), expect.any(Error))
     })
 
     it('More than one result', () => {
@@ -230,18 +228,18 @@ describe('items manager', () => {
         },
       ])
       item.log()
-      expect(logger.debug).toHaveBeenCalledTimes(2)
+      expect(testLogger.debug).toHaveBeenCalledTimes(2)
     })
 
     it('auto remove item', () => {
       jest.advanceTimersByTime(options.maxCacheTime)
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`deleted|${item.id}`, 'g')))
+      expect(testLogger.warn).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`deleted|${item.id}`, 'g')))
     })
 
     it('auto remove item with label', () => {
       item.label = 'label'
       jest.advanceTimersByTime(options.maxCacheTime)
-      expect(logger.warn).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`deleted|${item.label}`, 'g')))
+      expect(testLogger.warn).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`deleted|${item.label}`, 'g')))
     })
   })
 })

@@ -1,204 +1,171 @@
-import { Details, DetailsOptions } from '../details'
+import { Details } from '../details'
 import { ErrorDetails } from '../error.details'
+import { ModDetails } from '../mod.details'
 import { TimeDetails } from '../time.details'
-
-const options: DetailsOptions = {
-  canSingleErrorInDetails: true,
-  canSingleTimeInDetails: true,
-  canSingleTraceInDetails: true,
-}
-
-const testSpecialFields = <
-  F extends 'error' | 'stack' | 'time',
-  T extends F extends 'error' ? ErrorDetails : F extends 'time' ? TimeDetails : string[] | { label: string; stack: string[] },
-  N extends keyof DetailsOptions,
->(
-  type: F,
-  first: T,
-  second: T,
-  optionName: N,
-) => {
-  const onceField = `_${type}`
-  const arrayField = `_${type}s`
-  const setMethod = type === 'error' ? 'setError' : type === 'stack' ? 'setStack' : 'setTime'
-  const setData = (details: Details, data: T) => {
-    details[setMethod](data as any)
-  }
-  const allowOpt = {
-    ...options,
-    [optionName]: true,
-  }
-  const disallowOpt = {
-    ...options,
-    [optionName]: false,
-  }
-
-  describe(`test special field ${type}`, () => {
-    it('first item with allowed array', () => {
-      const details = new Details(allowOpt)
-
-      setData(details, first)
-      expect(details[onceField]).toEqual(first)
-      expect(details[arrayField]).not.toBeDefined()
-    })
-
-    it('first item with disallowed array', () => {
-      const details = new Details(disallowOpt)
-
-      setData(details, first)
-      expect(details[arrayField]).toEqual(expect.arrayContaining([first]))
-      expect(details[onceField]).not.toBeDefined()
-    })
-
-    it('second item', () => {
-      const details = new Details(allowOpt)
-
-      setData(details, first)
-      setData(details, second)
-      expect(details[arrayField]).toEqual(expect.arrayContaining([first, second]))
-      expect(details[onceField]).not.toBeDefined()
-    })
-
-    it('present once', () => {
-      const details = new Details(allowOpt)
-
-      setData(details, first)
-      details[arrayField] = ['test']
-      setData(details, second)
-      expect(details[arrayField]).toEqual(expect.arrayContaining([first, 'test', second]))
-      expect(details[onceField]).not.toBeDefined()
-    })
-
-    it('present array', () => {
-      const details = new Details(allowOpt)
-
-      details[arrayField] = ['test']
-      setData(details, first)
-      expect(details[arrayField]).toEqual(expect.arrayContaining(['test', first]))
-    })
-
-    it('Array field is not array', () => {
-      const details = new Details(allowOpt)
-
-      details[arrayField] = 'test'
-      setData(details, first)
-      setData(details, second)
-      expect(details[arrayField]).toEqual('test')
-      expect(details[`_${arrayField}`]).toEqual(expect.arrayContaining([first, second]))
-    })
-  })
-}
+import { TimeRange } from '../time.range'
 
 describe('details', () => {
-  it('assign object', () => {
-    const details = new Details(options)
-    const testData = {
-      field: 'qwerty',
-      field2: 'tratata',
-    }
+  let details: Details
 
+  beforeEach(() => {
+    details = new Details()
+  })
+
+  it('empty details', () => {
     expect(details.empty).toBeTruthy()
-    details.assign(testData)
-    expect(details).toEqual(expect.objectContaining(testData))
-    expect(details.empty).toBeFalsy()
+    expect(Object.keys(details.reserved).length).toEqual(0)
+    expect(Object.keys(details.hidden).length).toEqual(0)
+    expect(Object.keys(details.details).length).toEqual(0)
   })
 
-  it('assign no console object', () => {
-    const details = new Details(options)
-    const testData = {
-      field: 'qwerty',
-      field2: 'tratata',
-    }
-
-    details.setNoConsole(testData)
-    expect(details).not.toEqual(expect.objectContaining(testData))
-    expect(details.toJSON()).toEqual(expect.objectContaining(testData))
-    expect(details.empty).toBeTruthy()
-  })
-
-  it('set depth', () => {
-    const details = new Details(options)
-    details.setDepth(1)
-    expect(details._depth).toEqual(1)
-  })
-
-  describe('special fields', () => {
-    it('set no ErrorDetails instance', () => {
-      const details = new Details(options)
-      // @ts-ignore
-      details.setError('unknown')
-
-      expect(details._error).not.toBeDefined()
+  describe('errors', () => {
+    it('empty list errors', () => {
+      expect(details.errors).toEqual(expect.any(Array))
+      expect(details.errors.length).toEqual(0)
     })
 
-    it('set no TimeDetails instance', () => {
-      const details = new Details(options)
+    it('incorrect type', () => {
       // @ts-ignore
-      details.setTime('unknown')
-
-      expect(details._time).not.toBeDefined()
+      details.setError('qwerty')
+      expect(details.errors.length).toEqual(0)
     })
 
-    it('set error with details', () => {
-      class TestError extends Error {
-        field = 'qwerty'
-      }
-      const te = new TestError('message')
-      const details = new Details(options)
+    it('set error', () => {
+      const err = new ErrorDetails(new Error('qwerty'))
+      details.setError(err)
 
-      details.setError(new ErrorDetails(te))
+      expect(details.errors).toEqual(expect.arrayContaining([err]))
+      expect(details.reserved._errors).toEqual(expect.arrayContaining([err]))
+    })
 
+    it('error with fields', () => {
+      const error = new Error('qwerty')
+      Object.assign(error, { field: 'qwerty' })
+      const err = new ErrorDetails(error)
+      details.setError(err)
       expect(details.empty).toBeFalsy()
-      expect(details.field).toEqual(te.field)
+      expect(details.details).toEqual(expect.objectContaining({ field: 'qwerty' }))
+    })
+  })
+
+  describe('times', () => {
+    it('empty list times', () => {
+      expect(details.times).toEqual(expect.any(Array))
+      expect(details.times.length).toEqual(0)
     })
 
-    it('set string stack', () => {
-      const details = new Details(options)
-      details.setStack('at row1\nat row2')
-
-      expect(details._stack).toEqual(expect.arrayContaining(['at row1', 'at row2']))
+    it('incorrect type', () => {
+      // @ts-ignore
+      details.setTime('qwerty')
+      expect(details.times.length).toEqual(0)
     })
 
-    it('set stack with label', () => {
-      const details = new Details(options)
-      details.setStack(['at row1', 'at row2'], 'label')
+    it('set time', () => {
+      const time = new TimeDetails(123)
+      details.setTime(time)
 
-      expect(details._stack).toEqual(
+      expect(details.times).toEqual(expect.arrayContaining([time]))
+      expect(details.reserved._times).toEqual(expect.arrayContaining([time]))
+    })
+  })
+
+  describe('stacktraces', () => {
+    it('empty list stacktraces', () => {
+      expect(details.stacks).toEqual(expect.any(Array))
+      expect(details.stacks.length).toEqual(0)
+    })
+
+    it('set stacktrace', () => {
+      const stack = ['at row 1', 'at row 2']
+      const label = 'label'
+      details.setStacktrace(stack, label)
+
+      expect(details.stacks).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            label,
+            stack: expect.arrayContaining(stack),
+          }),
+        ]),
+      )
+    })
+  })
+
+  describe('time range', () => {
+    it('set time range', () => {
+      const timeRange = new TimeRange(123, 321)
+      details.setTimeRange(timeRange)
+
+      expect(details.timeRange).toEqual(timeRange)
+      expect(details.reserved._timeRange).toEqual(timeRange)
+      expect(details.times).toEqual(expect.arrayContaining([timeRange.delta]))
+    })
+
+    it('error when re-adding TimeRange', () => {
+      details.setTimeRange(new TimeRange(123))
+      expect(() => details.setTimeRange(new TimeRange(321))).toThrow()
+    })
+  })
+
+  describe('module', () => {
+    it('module with class', () => {
+      const mod = new ModDetails('module name')
+      details.setModule(mod)
+      expect(details.module).toEqual(mod)
+      expect(details.reserved._module).toEqual(mod)
+    })
+
+    it('set module string', () => {
+      const name = 'module name'
+      const version = 'module.version'
+      details.setModule(name, version)
+
+      expect(details.module).toEqual(expect.objectContaining({ name, version }))
+    })
+  })
+
+  describe('aggregation into objects', () => {
+    it('details object', () => {
+      const obj = {
+        field: 'qwerty',
+        field2: 'qwerty 2',
+      }
+
+      details.assign(obj)
+      expect(details.details).toEqual(expect.objectContaining(obj))
+    })
+
+    it('hidden details object', () => {
+      const obj = {
+        field: 'qwerty',
+        field2: 'qwerty 2',
+      }
+
+      details.hiddenAssign(obj)
+      expect(details.hidden).toEqual(expect.objectContaining(obj))
+    })
+
+    it('merge full object to JSON', () => {
+      const obj = {
+        field: 'qwerty',
+        field2: 'qwerty 2',
+      }
+      const hiddenObj = {
+        field3: 'qwerty 3',
+        field4: 'qwerty 4',
+      }
+
+      details.assign(obj)
+      details.hiddenAssign(hiddenObj)
+      details.setModule('module name')
+
+      expect(details.toJSON()).toEqual(
         expect.objectContaining({
-          label: 'label',
-          stack: expect.arrayContaining(['at row1', 'at row2']),
+          ...obj,
+          ...hiddenObj,
+          ...details.reserved,
         }),
       )
     })
-
-    it('to JSON', () => {
-      const details = new Details(options)
-      details.setStack(['at row1', 'at row2'], 'label')
-      details.setError(new ErrorDetails(new Error()))
-      details.setTime(new TimeDetails(1))
-
-      const json = details.toJSON()
-
-      expect(json._error).toBeDefined()
-      expect(json._stack).toBeDefined()
-      expect(json._time).toBeDefined()
-    })
-
-    it('to cleared JSON', () => {
-      const details = new Details(options)
-      details.setStack(['at row1', 'at row2'], 'label')
-      details.setError(new ErrorDetails(new Error()))
-      details.setTime(new TimeDetails(1))
-
-      const json = details.toClearedJSON()
-
-      expect(json._error).not.toBeDefined()
-      expect(json._stack).not.toBeDefined()
-      expect(json._time).not.toBeDefined()
-    })
-
-    testSpecialFields('error', new ErrorDetails(new Error()), new ErrorDetails(new Error()), 'canSingleErrorInDetails')
-    testSpecialFields('time', new TimeDetails(12), new TimeDetails(13, 'label'), 'canSingleTimeInDetails')
-    testSpecialFields('stack', ['row1', 'row2'], ['row3', 'row4'], 'canSingleTraceInDetails')
   })
 })

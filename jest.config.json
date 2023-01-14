@@ -13,5 +13,7 @@
         "**/*.ts"
       ],
       "coverageDirectory": "../coverage",
-      "testEnvironment": "node"
+      "testEnvironment": "node",
+      "bail": 3,
+      "slowTestThreshold": 10
 }

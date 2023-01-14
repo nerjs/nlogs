@@ -21,11 +21,12 @@ export class StringFormatter implements IFormatter {
     return value
   }
 
-  protected separator = ':'
-  protected timestampSeparator = ' '
-  protected brackets = ['[', ']']
-  protected colors = false
-  protected depth = 10
+  readonly separator: string = ':'
+  readonly timestampSeparator: string = ' '
+  readonly stacktraceSeparator: string = '=='
+  readonly brackets: [string, string] = ['[', ']']
+  readonly colors: boolean = false
+  readonly depth: number = 10
 
   messages(data: any[]): string {
     return formatWithOptions(
@@ -115,11 +116,12 @@ export class StringFormatter implements IFormatter {
     const stacktraces: string[] = []
     const add = (stack: string[], label?: string) => {
       if (label) stacktraces.push(label)
+      else if (stacktraces.length) stacktraces.push(this.stacktraceSeparator)
       stacktraces.push(...stack.map(str => `  ${str}`))
     }
     details.errors.filter(Boolean).forEach(error => add(error.stack, `${error.name}: ${error.message}`))
     details.stacks.filter(Boolean).forEach(stack => {
-      if (Array.isArray(stack)) add(stack, stacktraces.length ? '==' : null)
+      if (Array.isArray(stack)) add(stack, null)
       else add(stack.stack, stack.label)
     })
     if (stacktraces.length) return `\n${stacktraces.join(`\n`)}`
