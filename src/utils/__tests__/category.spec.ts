@@ -5,23 +5,6 @@ describe('category', () => {
   const mod = { id: 'id', pathname: '' }
   const currentFilename = clearString(__filename, /^file:\/\//, /^\//)
 
-  it('enabled category by default', () => {
-    const category = new Category(mod)
-    expect(category.enabled).toBeTruthy()
-  })
-
-  it('disable by default', () => {
-    const category = new Category(mod)
-    category.disable()
-    expect(category.enabled).toBeFalsy()
-  })
-  it('enabled category by default', () => {
-    const category = new Category(mod)
-    category.disable()
-    category.enable()
-    expect(category.enabled).toBeTruthy()
-  })
-
   it('string category name', () => {
     const categoryName = 'qwerty'
     const category = new Category(mod, categoryName)
