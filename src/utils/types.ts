@@ -1,15 +1,6 @@
 import { ILogger } from '../helpers/types'
 import { LogInfo } from '../message/log.info'
 
-export enum Levels {
-  error,
-  warn,
-  info,
-  log,
-  debug,
-  trace,
-}
-
 export interface IFormatter {
   format(info: LogInfo): string
   messages(data: any[], info: LogInfo): string

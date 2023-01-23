@@ -9,7 +9,7 @@ class Entities {
 
 export class LogInfo {
   readonly entities = new Entities()
-  show: boolean = true
+  show?: boolean
   index?: string
   readonly details = new Details()
   readonly messages: any[] = []

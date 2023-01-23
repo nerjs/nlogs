@@ -9,6 +9,8 @@ export interface ILogger {
 
 export type MaybePromise<T> = T | PromiseLike<T>
 
+export type SomeRequired<T, K extends keyof T> = T & Required<Pick<T, K>>
+
 export type MetaInfo = {
   [key: symbol]: any
 }
