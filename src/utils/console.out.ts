@@ -1,16 +1,19 @@
-import { Console } from 'console'
 import { Writable } from 'stream'
-import { ILogger } from '../helpers/types'
 import { IOutLogger } from './types'
 
-export interface ConsoleOut extends ILogger {}
 export class ConsoleOut implements IOutLogger {
-  private console: Console
+  private readonly stderr: Writable
+  constructor(private readonly stdout: Writable, stderr?: Writable) {
+    this.stderr = stderr || stdout
+  }
 
-  constructor(stdout: Writable, stderr?: Writable) {
-    this.console = new Console(stdout, stderr)
-    ;['log', 'info', 'debug', 'warn', 'error'].forEach(key => {
-      this[key] = this.console[key]
-    })
+  out(str: string): void {
+    this.stdout.write(str)
+    this.stdout.write('\n')
+  }
+
+  error(str: string): void {
+    this.stderr.write(str)
+    this.stderr.write('\n')
   }
 }

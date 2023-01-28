@@ -33,7 +33,7 @@ export class TraceStore<T extends object = object> {
       ids.unshift(state.traceId)
     }
 
-    return ids
+    return ids.length ? ids : undefined
   }
 
   get details() {

@@ -14,59 +14,57 @@ export const STANDART_LEVELS = Object.keys(LEVELS).filter(level => level !== FAT
 export type StandartLevels = keyof typeof LEVELS
 export type Level = StandartLevels | string
 
-export interface LoggingRules {
-  level: string
+export interface LoggingMainRules {
   debugLevels: string[]
   moduleDebugLevels: string[]
   allowedLevels?: string | string[] | null
   isModule?: boolean | null
   isDev?: boolean | null
+  showLogger?: boolean | null
+}
+
+export interface LoggingTempRules {
   showDebug?: boolean | null
   showCategory?: boolean | null
-  showLogger?: boolean | null
   showLog?: boolean | null
 }
 
-export function loggingRules(rules: LoggingRules) {
-  if (rules.showLog != null) return logRules(rules.showLog, { ...rules, showLog: null })
-  if (rules.showLogger != null) return logRules(rules.showLogger, { ...rules, showLogger: null })
-  if (rules.level.toLowerCase() === FATAL) return true
-  if (rules.showCategory === false) return disabledCategory(rules.level)
-  if (rules.allowedLevels != null) {
-    if (typeof rules.allowedLevels === 'string') return stringAllowedLevel(rules as any)
-    if (Array.isArray(rules.allowedLevels)) return arrayAllowedLevels(rules as any)
+export function loggingRules(level: string, temp: LoggingTempRules, main: LoggingMainRules): boolean {
+  const lvl = level.toLowerCase()
+  if (temp.showLog != null) return logRules(temp.showLog, lvl, temp, main)
+  if (main.showLogger != null) return logRules(main.showLogger, lvl, temp, { ...main, showLogger: null })
+  if (lvl === FATAL || temp.showCategory === false) return true
+  if (main.allowedLevels != null) {
+    if (typeof main.allowedLevels === 'string') return stringAllowedLevel(lvl, main.allowedLevels.toLowerCase(), temp.showDebug)
+    if (Array.isArray(main.allowedLevels)) return arrayAllowedLevels(lvl, main.allowedLevels)
   }
 
-  return missingAllowedLevels(rules)
+  return missingAllowedLevels(level, temp.showDebug, main)
 }
 
-function logRules(rule: boolean, rules: LoggingRules) {
-  if (!rule || !STANDART_LEVELS.includes(rules.level)) return rule
-  if (rules.isModule && !rules.isDev) return loggingRules(rules)
+function logRules(rule: boolean, level: string, temp: LoggingTempRules, main: LoggingMainRules) {
+  if (!rule || !STANDART_LEVELS.includes(level)) return rule
+  if (main.isModule && !main.isDev) return loggingRules(level, temp, main)
 
   return true
 }
 
-function disabledCategory(_level: string) {
-  return false
+function arrayAllowedLevels(level: string, allowedLevels: string[]) {
+  return allowedLevels.includes(level)
 }
 
-function arrayAllowedLevels(rules: LoggingRules & { allowedLevels: string[] }) {
-  return rules.allowedLevels.includes(rules.level)
+function stringAllowedLevel(level: string, allowedLevels: string, showDebug?: boolean | null) {
+  if (allowedLevels === OFF) return false
+  if (showDebug || level === allowedLevels) return true
+  if (!(allowedLevels in LEVELS)) return stringAllowedLevel(level, 'error', showDebug)
+  if (!(level in LEVELS)) return true
+
+  return LEVELS[level] >= LEVELS[allowedLevels]
 }
 
-function stringAllowedLevel(rules: LoggingRules & { allowedLevels: string }) {
-  if (rules.allowedLevels.toLowerCase() === OFF) return false
-  if (rules.showDebug || rules.level.toLowerCase() === rules.allowedLevels.toLowerCase()) return true
-  if (!(rules.allowedLevels.toLowerCase() in LEVELS)) return stringAllowedLevel({ ...rules, allowedLevels: 'error' })
-  if (!(rules.level.toLowerCase() in LEVELS)) return true
-
-  return LEVELS[rules.level.toLowerCase()] >= LEVELS[rules.allowedLevels.toLowerCase()]
-}
-
-function missingAllowedLevels(rules: LoggingRules) {
-  const showDebug = rules.showDebug == null ? !!rules.isDev : rules.showDebug
+function missingAllowedLevels(level: string, showDebug: boolean | null | undefined, main: LoggingMainRules) {
+  if (showDebug == null) return missingAllowedLevels(level, !!main.isDev, main)
   if (showDebug) return true
-  const debugLevels = rules.isModule ? rules.moduleDebugLevels : rules.debugLevels
-  return !debugLevels.includes(rules.level)
+  const debugLevels = main.isModule ? main.moduleDebugLevels : main.debugLevels
+  return !debugLevels.includes(level)
 }

@@ -15,4 +15,7 @@ export interface IFormatter {
   null(value: null | undefined, info: LogInfo): string | null | undefined
 }
 
-export type IOutLogger = Partial<ILogger> & Pick<ILogger, 'log'>
+export interface IOutLogger {
+  out(str: string): void
+  error(str: string): void
+}

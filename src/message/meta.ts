@@ -9,10 +9,8 @@ export class Meta {
     readonly index?: string,
   ) {}
 
-  set<K extends keyof Meta>(key: K, value: Meta[K]) {
-    Object.assign(this, {
-      [key]: value,
-    })
+  set(key: string, value: any) {
+    this[key] = value
   }
 
   clone() {
