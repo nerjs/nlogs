@@ -26,7 +26,7 @@ export abstract class AbstractBaseLogger<O extends IAbstractBaseLoggerOptions, T
   protected abstract readonly debugAllowedList: AllowedList
   protected abstract readonly formatter: IFormatter
   protected abstract readonly reader: LogReader
-  protected abstract readonly out: IOutLogger
+  protected abstract readonly outLogs: IOutLogger
   protected abstract readonly options: O
   protected abstract readonly traceStore: TraceStore<TD>
 
@@ -146,6 +146,6 @@ export abstract class AbstractBaseLogger<O extends IAbstractBaseLoggerOptions, T
   }
 
   protected logToOut(std: 'out' | 'error', message: string) {
-    this.out[std](message)
+    this.outLogs[std](message)
   }
 }

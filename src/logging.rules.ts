@@ -33,7 +33,8 @@ export function loggingRules(level: string, temp: LoggingTempRules, main: Loggin
   const lvl = level.toLowerCase()
   if (temp.showLog != null) return logRules(temp.showLog, lvl, temp, main)
   if (main.showLogger != null) return logRules(main.showLogger, lvl, temp, { ...main, showLogger: null })
-  if (lvl === FATAL || temp.showCategory === false) return true
+  if (lvl === FATAL) return true
+  if (temp.showCategory === false) return false
   if (main.allowedLevels != null) {
     if (typeof main.allowedLevels === 'string') return stringAllowedLevel(lvl, main.allowedLevels.toLowerCase(), temp.showDebug)
     if (Array.isArray(main.allowedLevels)) return arrayAllowedLevels(lvl, main.allowedLevels)
@@ -47,6 +48,11 @@ function logRules(rule: boolean, level: string, temp: LoggingTempRules, main: Lo
   if (main.isModule && !main.isDev) return loggingRules(level, temp, main)
 
   return true
+}
+
+function deniedByCategory(level: string, temp: LoggingTempRules, main: LoggingMainRules): boolean {
+  if (main.isDev && main.isModule) return loggingRules(level, temp, main)
+  return false
 }
 
 function arrayAllowedLevels(level: string, allowedLevels: string[]) {

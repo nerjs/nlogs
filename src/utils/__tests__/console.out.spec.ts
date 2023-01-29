@@ -20,7 +20,7 @@ describe('console out util', () => {
     })
     ;[...outMethods, ...errMethods].forEach(method => {
       it(`${method} method`, () => {
-        out[method](data)
+        out.out(data)
         expect(stdout.read()).toMatch(data)
       })
     })
@@ -34,7 +34,7 @@ describe('console out util', () => {
 
     outMethods.forEach(method => {
       it(`${method} method to stdout`, () => {
-        out[method](data)
+        out.out(data)
         expect(stdout.read()).toMatch(data)
         expect(stderr.read()).toBeNull()
       })
@@ -42,7 +42,7 @@ describe('console out util', () => {
 
     errMethods.forEach(method => {
       it(`${method} method to stderr`, () => {
-        out[method](data)
+        out.error(data)
         expect(stdout.read()).toBeNull()
         expect(stderr.read()).toMatch(data)
       })

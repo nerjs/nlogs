@@ -29,7 +29,7 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
   protected debugAllowedList: AllowedList = BaseLogger.debugAllowedList
   protected formatter: IFormatter = BaseLogger.formatter
   protected reader: LogReader = BaseLogger.reader
-  protected out: IOutLogger = BaseLogger.out
+  protected outLogs: IOutLogger = BaseLogger.outLogs
   protected traceStore: TraceStore<BaseTraceDetails> = BaseLogger.traceStore
 
   protected module: Mod
@@ -92,7 +92,7 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
 
   static reader: LogReader = new LogReader(this.formatter)
 
-  static out: IOutLogger = new ConsoleOut(process.stdout, process.stderr)
+  static outLogs: IOutLogger = new ConsoleOut(process.stdout, process.stderr)
 
   static traceStore: TraceStore<BaseTraceDetails> = new TraceStore()
 
