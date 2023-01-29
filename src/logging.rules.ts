@@ -50,11 +50,6 @@ function logRules(rule: boolean, level: string, temp: LoggingTempRules, main: Lo
   return true
 }
 
-function deniedByCategory(level: string, temp: LoggingTempRules, main: LoggingMainRules): boolean {
-  if (main.isDev && main.isModule) return loggingRules(level, temp, main)
-  return false
-}
-
 function arrayAllowedLevels(level: string, allowedLevels: string[]) {
   return allowedLevels.includes(level)
 }

@@ -8,9 +8,22 @@ export const clearString = (base: string, ...patterns: (string | RegExp)[]): str
   return res
 }
 
+export const TRUE_VARIANTS = ['1', 'true', 'TRUE', 'yes', 'YES', 't', 'T', 'y', 'Y']
+export const FALSE_VARIANTS = ['0', 'false', 'FALSE', 'no', 'NO', 'f', 'F', 'n', 'N']
 export const stringToBoolean = (str?: string | undefined, def?: boolean) => {
   if (!str) return !!def
-  if (['1', 'true', 'TRUE', 'yes', 'YES', 't', 'T', 'y', 'Y'].includes(str)) return true
-  if (['0', 'false', 'FALSE', 'no', 'NO', 'f', 'F', 'n', 'N'].includes(str)) return false
+  if (TRUE_VARIANTS.includes(str)) return true
+  if (FALSE_VARIANTS.includes(str)) return false
   return !!def
+}
+
+export const formatList = (list: string | number | (string | number)[]): string => {
+  if (!Array.isArray(list)) return formatList([`${list}`])
+  const nlist = [...list].map(str => `"${`${str}`.trim()}"`)
+  if (!nlist.length) return ''
+  if (nlist.length === 1) return nlist[0]
+
+  const last = nlist.pop()
+
+  return `${nlist.join(', ')} and ${last}`
 }

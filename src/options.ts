@@ -3,10 +3,12 @@ import { IAbstractBaseLoggerOptions } from './abstract.base.logger'
 import {
   DEFAULT_CATEGORY,
   DEFAULT_DEBUG_LEVELS,
+  DEFAULT_FORMATTER,
   DEFAULT_MODULE_DEBUG_LEVELS,
   DEFAULT_PROJECT,
   DEFAULT_SERVICE,
   DEFAULT_STRICT_LEVEL_RULES,
+  PRODUCTION_FORMATTER,
 } from './constants'
 import { stringToBoolean } from './helpers/string'
 
@@ -61,9 +63,7 @@ const moduleDebugLevels: IAbstractBaseLoggerOptions['moduleDebugLevels'] =
     .filter(Boolean) || DEFAULT_MODULE_DEBUG_LEVELS
 
 const allowedLevels: IAbstractBaseLoggerOptions['allowedLevels'] =
-  NLOGS_LEVEL ||
-  LOGGER_LEVEL ||
-  LEVEL ||
+  (NLOGS_LEVEL || LOGGER_LEVEL || LEVEL)?.trim() ||
   (NLOGS_LEVELS || LOGGER_LEVELS || LEVELS)
     ?.split(',')
     .map(str => str.trim())
@@ -86,10 +86,10 @@ const formatterType: 'json' | 'light' | 'dark' | 'string' =
   NLOGS_FORMATTER && ['json', 'light', 'dark', 'string'].includes(NLOGS_FORMATTER)
     ? NLOGS_FORMATTER
     : NODE_ENV === 'production'
-    ? 'json'
-    : 'dark'
+    ? PRODUCTION_FORMATTER
+    : DEFAULT_FORMATTER
 
-const categoriesAllowedList: string | undefined =
+const categoriesAllowedList: string | undefined = (
   NLOGS_CATEGORY ||
   LOGGER_CATEGORY ||
   SHOW_CATEGORY ||
@@ -100,11 +100,12 @@ const categoriesAllowedList: string | undefined =
   SHOW_CATEGORIES ||
   ALLOWED_CATEGORIES ||
   CATEGORIES
+)?.trim()
 
-const debugAllowedList: string | undefined = NLOGS_DEBUG || LOGGER_DEBUG || NODE_DEBUG || DEBUG
+const debugAllowedList: string | undefined = (NLOGS_DEBUG || LOGGER_DEBUG || NODE_DEBUG || DEBUG)?.trim()
 
-const defaultProject: string = NLOGS_PROJECT || LOGGER_PROJECT || PROJECT || DEFAULT_PROJECT
-const defaultService: string = NLOGS_SERVICE || LOGGER_SERVICE || SERVICE || DEFAULT_SERVICE
+const defaultProject: string = (NLOGS_PROJECT || LOGGER_PROJECT || PROJECT)?.trim() || DEFAULT_PROJECT
+const defaultService: string = (NLOGS_SERVICE || LOGGER_SERVICE || SERVICE)?.trim() || DEFAULT_SERVICE
 const defaultCategory: string = DEFAULT_CATEGORY
 
 export default {

@@ -4,3 +4,5 @@ export const DEFAULT_STRICT_LEVEL_RULES = true
 export const DEFAULT_PROJECT = 'main'
 export const DEFAULT_SERVICE = ''
 export const DEFAULT_CATEGORY = 'default'
+export const PRODUCTION_FORMATTER = 'json'
+export const DEFAULT_FORMATTER = 'dark'
