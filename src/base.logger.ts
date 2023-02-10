@@ -14,6 +14,7 @@ import { StringFormatter } from './utils/string.formatter'
 import { LightStringFormatter } from './utils/light.string.formatter'
 import { DarkStringFormatter } from './utils/dark.string.formatter'
 import options from './options'
+import { MaybePromise } from './helpers/types'
 
 export interface BaseTraceDetails {}
 
@@ -66,6 +67,10 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
     })
   }
 
+  show(value: boolean) {
+    this.options.show = !!value
+  }
+
   static moduleResolver: ModResolver = new ModResolver()
 
   static options = (() => {
@@ -104,4 +109,16 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
     '',
     new Date(),
   )
+
+  static setTraceDetails(traceDetails: Record<string, any>) {
+    this.traceStore.setDetails(traceDetails)
+  }
+
+  static mergeTraceDetails(traceDetails: Record<string, any>) {
+    this.traceStore.mergeDetails(traceDetails)
+  }
+
+  static run<R extends MaybePromise<any>>(callback: () => R): R {
+    return this.traceStore.run(callback)
+  }
 }

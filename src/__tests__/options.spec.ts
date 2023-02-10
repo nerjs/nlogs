@@ -336,7 +336,7 @@ function checkBooleanVariable(key: keyof typeof options, variables: (keyof NodeJ
 
     it(`from ${formatList(currentVariableName)} with exists ${formatList(currentList)}`, async () => {
       process.env[currentVariableName] = TRUE_VARIANTS[0]
-      currentList.forEach((vk, i) => {
+      currentList.forEach(vk => {
         process.env[vk] = FALSE_VARIANTS[0]
       })
 

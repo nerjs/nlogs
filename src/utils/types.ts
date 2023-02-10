@@ -1,4 +1,3 @@
-import { ILogger } from '../helpers/types'
 import { LogInfo } from '../message/log.info'
 
 export interface IFormatter {

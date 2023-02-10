@@ -42,7 +42,11 @@ export const filterNotInternalStack = (stack: any[]): string[] => {
 
 export const stackToArray = (stack: string | string[]) => (Array.isArray(stack) ? stack : `${stack}`.split('\n'))
 
-export const getTopPath = (str: string): string => str.replace(/^(.*)\((.*)\)/, '$2')?.replace(/([:0-9]+)$/, '')
+export const getTopPath = (str: string): string =>
+  str
+    .replace(/^(.*)\((.*)\)/, '$2')
+    ?.replace(/([:0-9]+)$/, '')
+    ?.replace(/^at\s?/, '')
 
 export const getTopStackFile = (fn?: any): string | null => {
   const stack = filterNotInternalStack(stackToArray(getStackTrace(fn)))

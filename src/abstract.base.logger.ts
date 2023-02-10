@@ -8,6 +8,7 @@ import { LoggingMainRules, loggingRules } from './logging.rules'
 import { AllowedList } from './utils/allowed.list'
 import { LogInfo } from './message/log.info'
 import { TraceStore } from './utils/trace.store'
+import { STDERR, STDOUT } from './constants'
 
 export interface IAbstractBaseLoggerOptions {
   show?: boolean
@@ -138,7 +139,7 @@ export abstract class AbstractBaseLogger<O extends IAbstractBaseLoggerOptions, T
 
   protected logTo(level: string, std: 'out' | 'error', msgs: any[]) {
     if (!this.preCheckLoggingRules(level)) return
-    const info = this.readMessages(level, std, msgs)
+    const info = this.readMessages(level, std === 'out' ? STDOUT : STDERR, msgs)
     if (!this.postCheckLoggingRules(info)) return
 
     const str = this.formatter.format(info)

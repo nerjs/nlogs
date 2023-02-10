@@ -16,7 +16,12 @@ export class TraceStore<T extends object = object> {
   }
 
   get store() {
-    return this.storage.getStore()
+    const store = this.storage.getStore()
+    if (!store) {
+      this.storage.enterWith({ traceId: uuid() })
+      return this.store
+    }
+    return store
   }
 
   get traceId() {
