@@ -2,8 +2,12 @@ import { hostname } from 'os'
 import { IAbstractBaseLoggerOptions } from './abstract.base.logger'
 import {
   DEFAULT_CATEGORY,
+  DEFAULT_CHECK_CACHE_TIMEOUT_MS,
   DEFAULT_DEBUG_LEVELS,
   DEFAULT_FORMATTER,
+  DEFAULT_LOG_ON_START,
+  DEFAULT_MAX_CACHE_SIZE,
+  DEFAULT_MAX_CACHE_TIME_MS,
   DEFAULT_MODULE_DEBUG_LEVELS,
   DEFAULT_PROJECT,
   DEFAULT_SERVICE,
@@ -47,7 +51,18 @@ const {
   LEVEL,
   NLOGS_STRICT_LEVEL_RULES,
   LOGGER_STRICT_LEVEL_RULES,
+  NLOGS_DEFAULT_INDEX,
   LOGGER_DEFAULT_INDEX,
+  NLOGS_ITEM_MAX_CACHE_TIME,
+  NLOGS_TIME_MAX_CACHE_TIME,
+  NLOGS_COUNT_MAX_CACHE_TIME,
+  NLOGS_ITEM_CHECK_CACHE_TIMEOUT,
+  NLOGS_TIME_CHECK_CACHE_TIMEOUT,
+  NLOGS_COUNT_CHECK_CACHE_TIMEOUT,
+  NLOGS_ITEM_MAX_CACHE_SIZE,
+  NLOGS_TIME_MAX_CACHE_SIZE,
+  NLOGS_COUNT_MAX_CACHE_SIZE,
+  NLOGS_TIME_LOG_ON_START,
 } = process.env
 
 const debugLevels: IAbstractBaseLoggerOptions['debugLevels'] =
@@ -73,7 +88,7 @@ const isDev = NODE_ENV !== 'production'
 
 const strictLevelRules = stringToBoolean(NLOGS_STRICT_LEVEL_RULES || LOGGER_STRICT_LEVEL_RULES, DEFAULT_STRICT_LEVEL_RULES)
 
-const index = LOGGER_DEFAULT_INDEX
+const index = NLOGS_DEFAULT_INDEX || LOGGER_DEFAULT_INDEX
 
 const hiddenDetails: Record<string, any> = {
   _node: {
@@ -108,7 +123,7 @@ const defaultProject: string = (NLOGS_PROJECT || LOGGER_PROJECT || PROJECT)?.tri
 const defaultService: string = (NLOGS_SERVICE || LOGGER_SERVICE || SERVICE)?.trim() || DEFAULT_SERVICE
 const defaultCategory: string = DEFAULT_CATEGORY
 
-export default {
+export const loggerOptions = {
   debugLevels,
   moduleDebugLevels,
   allowedLevels,
@@ -122,4 +137,23 @@ export default {
   defaultProject,
   defaultService,
   defaultCategory,
+}
+
+// ITEMS OPTIONS
+
+const maxCacheTime = +NLOGS_ITEM_MAX_CACHE_TIME || DEFAULT_MAX_CACHE_TIME_MS
+const checkCacheTimeout = +NLOGS_ITEM_CHECK_CACHE_TIMEOUT || DEFAULT_CHECK_CACHE_TIMEOUT_MS
+const maxCacheSize = +NLOGS_ITEM_MAX_CACHE_SIZE || DEFAULT_MAX_CACHE_SIZE
+
+export const timesOptions = {
+  maxCacheTime: +NLOGS_TIME_MAX_CACHE_TIME || maxCacheTime,
+  checkCacheTimeout: +NLOGS_TIME_CHECK_CACHE_TIMEOUT || checkCacheTimeout,
+  maxCacheSize: +NLOGS_TIME_MAX_CACHE_SIZE || maxCacheSize,
+  logOnStart: stringToBoolean(NLOGS_TIME_LOG_ON_START, DEFAULT_LOG_ON_START),
+}
+
+export const countOptions = {
+  maxCacheTime: +NLOGS_COUNT_MAX_CACHE_TIME || maxCacheTime,
+  checkCacheTimeout: +NLOGS_COUNT_CHECK_CACHE_TIMEOUT || checkCacheTimeout,
+  maxCacheSize: +NLOGS_COUNT_MAX_CACHE_SIZE || maxCacheSize,
 }

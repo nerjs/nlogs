@@ -85,7 +85,7 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
     return item
   }
 
-  start(label?: string) {
+  start(label?: string): LogItem<D> {
     const id = label || uuid()
     if (this.has(id)) {
       const sitem = this.get(id)

@@ -13,7 +13,7 @@ import { JsonFormatter } from './utils/json.formatter'
 import { StringFormatter } from './utils/string.formatter'
 import { LightStringFormatter } from './utils/light.string.formatter'
 import { DarkStringFormatter } from './utils/dark.string.formatter'
-import options from './options'
+import { loggerOptions } from './options'
 import { MaybePromise } from './helpers/types'
 
 export interface BaseTraceDetails {}
@@ -23,7 +23,7 @@ export interface IBaseLoggerOptions {
   index?: string
 }
 
-type BaseOptions<T extends IBaseLoggerOptions> = typeof options & IAbstractBaseLoggerOptions & Partial<T>
+type BaseOptions<T extends IBaseLoggerOptions> = typeof loggerOptions & IAbstractBaseLoggerOptions & Partial<T>
 
 export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger<BaseOptions<T>, BaseTraceDetails> {
   protected categoriesAllowedList: AllowedList = BaseLogger.categoriesAllowedList
@@ -52,7 +52,7 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
     this.meta.set('timestamp', new Date())
 
     this.options = {
-      ...BaseLogger.options,
+      ...BaseLogger.loggerOptions,
       ...(options || {}),
     } as BaseOptions<T>
 
@@ -73,17 +73,17 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
 
   static moduleResolver: ModResolver = new ModResolver()
 
-  static options = (() => {
-    const opt = { ...options }
+  static loggerOptions = (() => {
+    const opt = { ...loggerOptions }
     opt.hiddenDetails._app = this.moduleResolver.app
     return opt
   })()
 
-  static categoriesAllowedList = new AllowedList(this.options.categoriesAllowedList)
-  static debugAllowedList = new AllowedList(this.options.debugAllowedList)
+  static categoriesAllowedList = new AllowedList(this.loggerOptions.categoriesAllowedList)
+  static debugAllowedList = new AllowedList(this.loggerOptions.debugAllowedList)
 
   static formatter: IFormatter = (() => {
-    switch (this.options.formatterType) {
+    switch (this.loggerOptions.formatterType) {
       case 'json':
         return new JsonFormatter()
       case 'string':
@@ -102,9 +102,9 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
   static traceStore: TraceStore<BaseTraceDetails> = new TraceStore()
 
   static defaultMeta: Meta = new Meta(
-    this.options.defaultProject,
-    this.options.defaultService,
-    this.options.defaultCategory,
+    this.loggerOptions.defaultProject,
+    this.loggerOptions.defaultService,
+    this.loggerOptions.defaultCategory,
     'log',
     '',
     new Date(),

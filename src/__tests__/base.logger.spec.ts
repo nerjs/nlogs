@@ -12,7 +12,7 @@ describe('Base logger', () => {
   let stdout: PassThrough
   let stderr: PassThrough
   const originalFormatter = BaseLogger.formatter
-  const originalOptions = { ...BaseLogger.options }
+  const originalOptions = { ...BaseLogger.loggerOptions }
 
   const currentPathname = getTopStackFile(getTopStackFile)
   const currentModule = BaseLogger.moduleResolver.resolve(currentPathname)
@@ -21,7 +21,7 @@ describe('Base logger', () => {
     stdout = new PassThrough({ encoding: 'utf-8' })
     stderr = new PassThrough({ encoding: 'utf-8' })
     BaseLogger.outLogs = new ConsoleOut(stdout, stderr)
-    BaseLogger.options = { ...originalOptions }
+    BaseLogger.loggerOptions = { ...originalOptions }
     BaseLogger.formatter = originalFormatter
   })
 
@@ -77,9 +77,9 @@ describe('Base logger', () => {
       { key: 'string', name: 'StringFormatter', pathname: '../utils/string.formatter' },
     ].forEach(({ key, name, pathname }) => {
       it(`"${key}" formatter`, async () => {
-        const opt = (await import('../options')).default
+        const { loggerOptions } = await import('../options')
         const { [name]: formatter } = await import(pathname)
-        opt.formatterType = key as any
+        loggerOptions.formatterType = key as any
         const { BaseLogger } = await import('../base.logger')
 
         expect(BaseLogger.formatter).toBeInstanceOf(formatter)

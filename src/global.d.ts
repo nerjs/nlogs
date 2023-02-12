@@ -49,7 +49,22 @@ namespace NodeJS {
     NLOGS_STRICT_LEVEL_RULES?: string
     LOGGER_STRICT_LEVEL_RULES?: string
 
+    NLOGS_DEFAULT_INDEX?: string
     LOGGER_DEFAULT_INDEX?: string
+
+    NLOGS_ITEM_MAX_CACHE_TIME?: string
+    NLOGS_TIME_MAX_CACHE_TIME?: string
+    NLOGS_COUNT_MAX_CACHE_TIME?: string
+
+    NLOGS_ITEM_CHECK_CACHE_TIMEOUT?: string
+    NLOGS_TIME_CHECK_CACHE_TIMEOUT?: string
+    NLOGS_COUNT_CHECK_CACHE_TIMEOUT?: string
+
+    NLOGS_ITEM_MAX_CACHE_SIZE?: string
+    NLOGS_TIME_MAX_CACHE_SIZE?: string
+    NLOGS_COUNT_MAX_CACHE_SIZE?: string
+
+    NLOGS_TIME_LOG_ON_START?: string
 
     TASK_SLOT?: string
     SLOT?: string

@@ -1,5 +1,5 @@
 /* eslint-disable prefer-rest-params */
-import options from '../options'
+import { loggerOptions } from '../options'
 import { FALSE_VARIANTS, formatList, TRUE_VARIANTS } from '../helpers/string'
 import {
   DEFAULT_CATEGORY,
@@ -39,28 +39,28 @@ describe('generating parameters from environment variables', () => {
   describe('isDev field', () => {
     it('development mode', async () => {
       process.env.NODE_ENV = 'development'
-      const opt = (await import('../options')).default
+      const { loggerOptions } = await import('../options')
 
-      expect(opt.isDev).toBeTruthy()
+      expect(loggerOptions.isDev).toBeTruthy()
     })
 
     it('production mode', async () => {
       process.env.NODE_ENV = 'production'
-      const opt = (await import('../options')).default
+      const { loggerOptions } = await import('../options')
 
-      expect(opt.isDev).toBeFalsy()
+      expect(loggerOptions.isDev).toBeFalsy()
     })
 
     it('custom mode', async () => {
       process.env.NODE_ENV = 'custom' as any
-      const opt = (await import('../options')).default
+      const { loggerOptions } = await import('../options')
 
-      expect(opt.isDev).toBeTruthy()
+      expect(loggerOptions.isDev).toBeTruthy()
     })
 
     it('missing NODE_ENV', async () => {
-      const opt = (await import('../options')).default
-      expect(opt.isDev).toBeTruthy()
+      const { loggerOptions } = await import('../options')
+      expect(loggerOptions.isDev).toBeTruthy()
     })
   })
 
@@ -76,8 +76,8 @@ describe('generating parameters from environment variables', () => {
   describe('index field', () => {
     it('from "LOGGER_DEFAULT_INDEX"', async () => {
       process.env.LOGGER_DEFAULT_INDEX = 'idx'
-      const opt = (await import('../options')).default
-      expect(opt.index).toEqual('idx')
+      const { loggerOptions } = await import('../options')
+      expect(loggerOptions.index).toEqual('idx')
     })
   })
 
@@ -85,31 +85,31 @@ describe('generating parameters from environment variables', () => {
     ;['json', 'light', 'dark', 'string'].forEach(val => {
       it(`"${val}" value from "NLOGS_FORMATTER"`, async () => {
         process.env.NLOGS_FORMATTER = val as any
-        const opt = (await import('../options')).default
+        const { loggerOptions } = await import('../options')
 
-        expect(opt.formatterType).toEqual(val)
+        expect(loggerOptions.formatterType).toEqual(val)
       })
     })
 
     it('Incorrect value', async () => {
       process.env.NLOGS_FORMATTER = 'custom' as any
-      const opt = (await import('../options')).default
+      const { loggerOptions } = await import('../options')
 
-      expect(opt.formatterType).toEqual(DEFAULT_FORMATTER)
+      expect(loggerOptions.formatterType).toEqual(DEFAULT_FORMATTER)
     })
 
     it('empty "NLOGS_FORMATTER" in production mode', async () => {
       process.env.NODE_ENV = 'production'
-      const opt = (await import('../options')).default
+      const { loggerOptions } = await import('../options')
 
-      expect(opt.formatterType).toEqual(PRODUCTION_FORMATTER)
+      expect(loggerOptions.formatterType).toEqual(PRODUCTION_FORMATTER)
     })
 
     it('empty "NLOGS_FORMATTER" in development mode', async () => {
       process.env.NODE_ENV = 'development'
-      const opt = (await import('../options')).default
+      const { loggerOptions } = await import('../options')
 
-      expect(opt.formatterType).toEqual(DEFAULT_FORMATTER)
+      expect(loggerOptions.formatterType).toEqual(DEFAULT_FORMATTER)
     })
   })
 
@@ -145,17 +145,22 @@ describe('generating parameters from environment variables', () => {
 
   describe('defaultCategory field', () => {
     it(`from default value (${DEFAULT_CATEGORY}) (constant "DEFAULT_CATEGORY")`, async () => {
-      const opt = (await import('../options')).default
+      const { loggerOptions } = await import('../options')
 
-      expect(opt.defaultCategory).toEqual(DEFAULT_CATEGORY)
+      expect(loggerOptions.defaultCategory).toEqual(DEFAULT_CATEGORY)
     })
   })
 })
 
-function interchangeableVariables(key: keyof typeof options, variables: (keyof NodeJS.ProcessEnv)[], defaultValue?: any)
-function interchangeableVariables(key: keyof typeof options, variables: (keyof NodeJS.ProcessEnv)[], defaultKey: any, defaultValue?: any)
+function interchangeableVariables(key: keyof typeof loggerOptions, variables: (keyof NodeJS.ProcessEnv)[], defaultValue?: any)
 function interchangeableVariables(
-  key: keyof typeof options,
+  key: keyof typeof loggerOptions,
+  variables: (keyof NodeJS.ProcessEnv)[],
+  defaultKey: any,
+  defaultValue?: any,
+)
+function interchangeableVariables(
+  key: keyof typeof loggerOptions,
   variables: (keyof NodeJS.ProcessEnv)[],
   _defaultKey?: any,
   _defaultValue?: any,
@@ -163,8 +168,8 @@ function interchangeableVariables(
   if (!variables.length) return
 
   const load = async () => {
-    const opt = (await import('../options')).default
-    return opt[key]
+    const { loggerOptions } = await import('../options')
+    return loggerOptions[key]
   }
 
   for (const variableName of variables) {
@@ -217,15 +222,15 @@ function interchangeableVariables(
   }
 }
 
-function interchangeableVariablesArrays(key: keyof typeof options, variables: (keyof NodeJS.ProcessEnv)[], defaultValue?: any)
+function interchangeableVariablesArrays(key: keyof typeof loggerOptions, variables: (keyof NodeJS.ProcessEnv)[], defaultValue?: any)
 function interchangeableVariablesArrays(
-  key: keyof typeof options,
+  key: keyof typeof loggerOptions,
   variables: (keyof NodeJS.ProcessEnv)[],
   defaultKey: any,
   defaultValue?: any,
 )
 function interchangeableVariablesArrays(
-  key: keyof typeof options,
+  key: keyof typeof loggerOptions,
   variables: (keyof NodeJS.ProcessEnv)[],
   _defaultKey?: any,
   _defaultValue?: any,
@@ -233,8 +238,8 @@ function interchangeableVariablesArrays(
   if (!variables.length) return
 
   const load = async () => {
-    const opt = (await import('../options')).default
-    return opt[key]
+    const { loggerOptions } = await import('../options')
+    return loggerOptions[key]
   }
 
   for (const variableName of variables) {
@@ -287,14 +292,19 @@ function interchangeableVariablesArrays(
   }
 }
 
-function checkBooleanVariable(key: keyof typeof options, variables: (keyof NodeJS.ProcessEnv)[], defaultValue?: any)
-function checkBooleanVariable(key: keyof typeof options, variables: (keyof NodeJS.ProcessEnv)[], defaultKey: any, defaultValue?: any)
-function checkBooleanVariable(key: keyof typeof options, variables: (keyof NodeJS.ProcessEnv)[], _defaultKey?: any, _defaultValue?: any) {
+function checkBooleanVariable(key: keyof typeof loggerOptions, variables: (keyof NodeJS.ProcessEnv)[], defaultValue?: any)
+function checkBooleanVariable(key: keyof typeof loggerOptions, variables: (keyof NodeJS.ProcessEnv)[], defaultKey: any, defaultValue?: any)
+function checkBooleanVariable(
+  key: keyof typeof loggerOptions,
+  variables: (keyof NodeJS.ProcessEnv)[],
+  _defaultKey?: any,
+  _defaultValue?: any,
+) {
   if (!variables.length) return
 
   const load = async () => {
-    const opt = (await import('../options')).default
-    return opt[key]
+    const { loggerOptions } = await import('../options')
+    return loggerOptions[key]
   }
 
   const check = (typeVal: boolean, variableKey: keyof NodeJS.ProcessEnv, arr: string[]) => {
