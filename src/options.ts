@@ -15,6 +15,7 @@ import {
   PRODUCTION_FORMATTER,
 } from './constants'
 import { stringToBoolean } from './helpers/string'
+import { ILoggerEnv } from './utils/types'
 
 const {
   NLOGS_PROJECT,
@@ -38,6 +39,7 @@ const {
   NODE_DEBUG,
   DEBUG,
   NLOGS_FORMATTER,
+  LOGGER_FORMATTER,
   NODE_ENV,
   NLOGS_DEBUG_LEVELS,
   DEBUG_LEVELS,
@@ -63,7 +65,7 @@ const {
   NLOGS_TIME_MAX_CACHE_SIZE,
   NLOGS_COUNT_MAX_CACHE_SIZE,
   NLOGS_TIME_LOG_ON_START,
-} = process.env
+} = process.env as ILoggerEnv
 
 const debugLevels: IAbstractBaseLoggerOptions['debugLevels'] =
   (NLOGS_DEBUG_LEVELS || DEBUG_LEVELS)
@@ -100,9 +102,13 @@ const hiddenDetails: Record<string, any> = {
 const formatterType: 'json' | 'light' | 'dark' | 'string' =
   NLOGS_FORMATTER && ['json', 'light', 'dark', 'string'].includes(NLOGS_FORMATTER)
     ? NLOGS_FORMATTER
+    : LOGGER_FORMATTER && ['json', 'light', 'dark', 'string'].includes(LOGGER_FORMATTER)
+    ? LOGGER_FORMATTER
     : NODE_ENV === 'production'
     ? PRODUCTION_FORMATTER
     : DEFAULT_FORMATTER
+
+// :
 
 const categoriesAllowedList: string | undefined = (
   NLOGS_CATEGORY ||

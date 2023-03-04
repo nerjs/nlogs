@@ -5,7 +5,7 @@ const showMetaInfo = [INTERPOLATE, TIMERANGE, TIME, HIGHLIGHT]
 
 const isMeta = (val: any): val is MetaInfo => isMetaInfo(val) && !showMetaInfo.includes(val[IS_META_INFO])
 
-type Template = [a: TemplateStringsArray, ...b: any[]]
+export type Template<T = any> = [a: TemplateStringsArray, ...b: T[]]
 
 const isTemplateStringsArray = (arr: any): arr is TemplateStringsArray =>
   arr && Array.isArray(arr) && 'raw' in arr && Array.isArray((arr as TemplateStringsArray).raw) && Object.isFrozen(arr)
@@ -34,8 +34,8 @@ export const transformTemplate = ([tmp, ...args]: Template) => {
       }
 
       if (idx === arr.length - 1 && typeof cur === 'string') {
-        console.log({ cur })
-        acc.messages.push(cur.replace(/[\s\n]+$/, ''))
+        const lastStr = cur.replace(/[\s\n]+$/, '')
+        if (lastStr) acc.messages.push(lastStr)
         return acc
       }
 
@@ -61,6 +61,14 @@ export const transformTemplate = ([tmp, ...args]: Template) => {
     },
     { messages: [], meta: [] },
   )
+
+  messages.push('')
+
+  if (messages.length && typeof messages[messages.length - 1] === 'string' && !messages[messages.length - 1]) messages.pop()
+  if (messages.length && typeof messages[messages.length - 1] === 'string' && messages[messages.length - 1].endsWith('\n'))
+    messages[messages.length - 1] = messages[messages.length - 1].replace(/[\n\s]+$/, '')
+
+  console.log({ messages })
 
   return [...messages, ...meta]
 }
