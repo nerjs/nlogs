@@ -16,3 +16,6 @@ export const DEFAULT_LOG_ON_START = true
 
 export const STDOUT = 'stdout'
 export const STDERR = 'stderr'
+
+export const TIME_LOG = 'timeLog'
+export const TIME_END = 'timeEnd'

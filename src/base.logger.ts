@@ -26,15 +26,15 @@ export interface IBaseLoggerOptions {
 type BaseOptions<T extends IBaseLoggerOptions> = typeof loggerOptions & IAbstractBaseLoggerOptions & Partial<T>
 
 export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger<BaseOptions<T>, BaseTraceDetails> {
-  protected categoriesAllowedList: AllowedList = BaseLogger.categoriesAllowedList
-  protected debugAllowedList: AllowedList = BaseLogger.debugAllowedList
-  protected formatter: IFormatter = BaseLogger.formatter
-  protected reader: LogReader = BaseLogger.reader
-  protected outLogs: IOutLogger = BaseLogger.outLogs
-  protected traceStore: TraceStore<BaseTraceDetails> = BaseLogger.traceStore
+  protected categoriesAllowedList: AllowedList = this.staticLogger.categoriesAllowedList
+  protected debugAllowedList: AllowedList = this.staticLogger.debugAllowedList
+  protected formatter: IFormatter = this.staticLogger.formatter
+  protected reader: LogReader = this.staticLogger.reader
+  protected outLogs: IOutLogger = this.staticLogger.outLogs
+  protected traceStore: TraceStore<BaseTraceDetails> = this.staticLogger.traceStore
 
-  protected module: Mod
-  protected meta: Meta
+  readonly module: Mod
+  readonly meta: Meta
   protected options: BaseOptions<T>
 
   constructor(cat?: Cat)
@@ -43,16 +43,16 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
     super()
 
     const pathname = getTopStackFile(this.constructor)
-    this.module = BaseLogger.moduleResolver.resolve(pathname)
+    this.module = this.staticLogger.moduleResolver.resolve(pathname)
     const category = new Category(this.module, cat || Category.relativePath(pathname, this.module))
-    this.meta = BaseLogger.defaultMeta.clone()
+    this.meta = this.staticLogger.defaultMeta.clone()
     if (!this.meta.service) this.meta.set('service', this.module.name)
     this.meta.set('category', category.name)
     this.meta.set('traceId', this.traceStore.traceId)
     this.meta.set('timestamp', new Date())
 
     this.options = {
-      ...BaseLogger.loggerOptions,
+      ...this.staticLogger.loggerOptions,
       ...(options || {}),
     } as BaseOptions<T>
 
@@ -65,6 +65,19 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
         configurable: true,
       })
     })
+
+    const categoryName = this.meta.category.replace(/\s+/g, '_')
+    Object.keys(this)
+      .filter(key => typeof this[key] === 'function' && !this[key].name)
+      .forEach(key =>
+        Object.defineProperty(this[key], 'name', {
+          value: `${categoryName}~${key}`,
+        }),
+      )
+  }
+
+  get staticLogger() {
+    return this.constructor as typeof BaseLogger
   }
 
   show(value: boolean) {

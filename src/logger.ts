@@ -1,5 +1,6 @@
 import { BaseLogger, IBaseLoggerOptions } from './base.logger'
 import { countOptions, timesOptions } from './options'
+import { Cat } from './utils/category'
 import { ItemsCounters } from './utils/items.counter'
 import { ItemsTimers } from './utils/items.timer'
 
@@ -8,6 +9,19 @@ export interface ILoggerOptions extends IBaseLoggerOptions {}
 export class Logger extends BaseLogger<ILoggerOptions> {
   private readonly timers = new ItemsTimers(this, Logger.timeOptions)
   private readonly counters = new ItemsCounters(this, Logger.countOptions)
+
+  constructor(cat?: Cat)
+  constructor(cat: Cat | null, options?: Partial<ILoggerOptions>)
+  constructor(cat?: Cat | null, options?: Partial<ILoggerOptions>) {
+    super(cat, options)
+    ;['timers', 'counters'].forEach(key => {
+      Object.defineProperty(this, key, {
+        value: this[key],
+        enumerable: false,
+        configurable: true,
+      })
+    })
+  }
 
   count(label?: string) {
     if (label && this.counters.has(label)) {

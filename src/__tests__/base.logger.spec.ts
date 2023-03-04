@@ -1,12 +1,14 @@
 import { PassThrough } from 'stream'
 import { BaseLogger } from '../base.logger'
-import { STDERR, STDOUT } from '../constants'
 import { getTopStackFile } from '../helpers/stack'
 import { clearString } from '../helpers/string'
+import { testStandartLevels } from '../helpers/testHelpers'
 import { sleep } from '../helpers/time'
 import { ConsoleOut } from '../utils/console.out'
 import { JsonFormatter } from '../utils/json.formatter'
 import { Mod } from '../utils/mod'
+import { StringFormatter } from '../utils/string.formatter'
+import { AllowedList } from '../utils/allowed.list'
 
 describe('Base logger', () => {
   let stdout: PassThrough
@@ -54,8 +56,16 @@ describe('Base logger', () => {
       logger.trace()
 
       const str = stdout.read()
-      expect(str).toBeDefined()
       expect(str).not.toBeNull()
+    })
+
+    it('The show() method overrides the show option', () => {
+      const logger = new BaseLogger(null, { show: true })
+      logger.show(false)
+      logger.trace()
+
+      const str = stdout.read()
+      expect(str).toBeNull()
     })
 
     it('hide logs', () => {
@@ -87,26 +97,7 @@ describe('Base logger', () => {
     })
   })
 
-  describe('standart levels', () => {
-    const outLevels = ['trace', 'debug', 'log', 'info']
-    const errLevels = ['warn', 'error', 'fatal']
-
-    beforeEach(() => {
-      BaseLogger.formatter = new JsonFormatter()
-    })
-    ;[...outLevels, ...errLevels].forEach(level => {
-      it(`level ${level}`, () => {
-        const logger = new BaseLogger(null, { show: true })
-        const std = outLevels.includes(level) ? STDOUT : STDERR
-        const stream = outLevels.includes(level) ? stdout : stderr
-        logger[level]('message')
-        const message = JSON.parse(stream.read())
-
-        expect(message.meta.level).toEqual(level)
-        expect(message.details._std).toEqual(std)
-      })
-    })
-  })
+  testStandartLevels(BaseLogger)
 
   it('messages with module', () => {
     BaseLogger.formatter = new JsonFormatter()
@@ -231,15 +222,13 @@ describe('Base logger', () => {
 
   describe('use strict levels rules', () => {
     beforeEach(() => {
-      jest.resetModules()
-      process.env.DEBUG_LEVELS = 'trace,debug'
-      process.env.NLOGS_DEBUG = '!*'
+      BaseLogger.loggerOptions.debugLevels = ['trace', 'debug']
+      BaseLogger.debugAllowedList = new AllowedList('!')
+      BaseLogger.formatter = new StringFormatter()
     })
 
-    it('strictLevelRules is false', async () => {
-      process.env.NLOGS_STRICT_LEVEL_RULES = '0'
-      const { BaseLogger } = await import('../base.logger')
-      BaseLogger.outLogs = new ConsoleOut(stdout)
+    it('If the strictLevelRules parameter is specified as FALSE, the level override will work ', async () => {
+      BaseLogger.loggerOptions.strictLevelRules = false
 
       const logger = new BaseLogger()
       logger.debug(BaseLogger.level('info'))
@@ -247,24 +236,19 @@ describe('Base logger', () => {
       expect(stdout.read()).not.toBeNull()
     })
 
-    it('strictLevelRules is true', async () => {
-      process.env.NLOGS_STRICT_LEVEL_RULES = '1'
-      const { BaseLogger } = await import('../base.logger')
-      BaseLogger.outLogs = new ConsoleOut(stdout)
+    it('If the strictLevelRules parameter is specified as TRUE, the level override will not work', async () => {
+      BaseLogger.loggerOptions.strictLevelRules = true
 
       const logger = new BaseLogger()
       logger.debug(BaseLogger.level('info'))
-
       expect(stdout.read()).toBeNull()
     })
 
-    it('strictLevelRules is true', async () => {
-      process.env.NLOGS_STRICT_LEVEL_RULES = '1'
-      const { BaseLogger } = await import('../base.logger')
-      BaseLogger.outLogs = new ConsoleOut(stdout)
+    it('If the strictLevelRules parameter is specified as false, the check will take place after a possible level override', async () => {
+      BaseLogger.loggerOptions.strictLevelRules = false
 
       const logger = new BaseLogger()
-      logger.debug(BaseLogger.level('info'))
+      logger.debug('some message')
 
       expect(stdout.read()).toBeNull()
     })

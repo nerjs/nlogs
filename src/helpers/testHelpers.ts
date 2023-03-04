@@ -7,6 +7,11 @@ import { ILogger } from './types'
 import { FALSE_VARIANTS, formatList, TRUE_VARIANTS, uuid } from './string'
 import * as options from '../options'
 import { ILoggerEnv } from '../utils/types'
+import { BaseLogger } from '../base.logger'
+import { PassThrough } from 'stream'
+import { JsonFormatter } from '../utils/json.formatter'
+import { ConsoleOut } from '../utils/console.out'
+import { STDERR, STDOUT } from '../constants'
 
 export const meta = new Meta('project', 'service', 'category', 'debug', 'traceId', new Date(), 'index')
 export const stringFormatter = new StringFormatter()
@@ -266,4 +271,43 @@ export const createOptionsChecker = <O extends OptionsMainKeys>(optionsKey: O) =
     ivEnum,
     load,
   }
+}
+
+export const testStandartLevels = (TestLogger: typeof BaseLogger) => {
+  describe('standart levels', () => {
+    const outLevels = ['trace', 'debug', 'log', 'info']
+    const errLevels = ['warn', 'error', 'fatal']
+    let stdout: PassThrough
+    let stderr: PassThrough
+    let logger: BaseLogger<any>
+
+    const oldOut = TestLogger.outLogs
+    const oldFormatter = TestLogger.formatter
+
+    afterAll(() => {
+      TestLogger.outLogs = oldOut
+      TestLogger.formatter = oldFormatter
+    })
+
+    beforeEach(() => {
+      stdout = new PassThrough({ encoding: 'utf-8' })
+      stderr = new PassThrough({ encoding: 'utf-8' })
+      TestLogger.outLogs = new ConsoleOut(stdout, stderr)
+      TestLogger.formatter = new JsonFormatter()
+      logger = new TestLogger(null, { show: true })
+    })
+    ;[...outLevels, ...errLevels].forEach(level => {
+      it(`level ${level}`, () => {
+        const std = outLevels.includes(level) ? STDOUT : STDERR
+        const stream = outLevels.includes(level) ? stdout : stderr
+        logger[level]('message')
+        const str = stream.read()
+        expect(str).not.toBeNull()
+        const message = JSON.parse(str)
+
+        expect(message.meta.level).toEqual(level)
+        expect(message.details._std).toEqual(std)
+      })
+    })
+  })
 }

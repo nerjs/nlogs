@@ -1,3 +1,4 @@
+import { TIME_END, TIME_LOG } from '../constants'
 import { ItemManagerOptions, ItemMsg, ItemResult, ItemsManager, LogType } from './items.manager'
 import { StaticLogger } from './static.logger'
 
@@ -25,13 +26,13 @@ export class ItemsTimers extends ItemsManager<number, ItemTimerOptions> {
       case LogType.LOG:
         return {
           level: 'debug',
-          messages: [StaticLogger.timeRange(msg.data, Date.now(), `timeLog${msg.label ? `: ${msg.label}` : ''}`), messages],
+          messages: [StaticLogger.timeRange(msg.data, Date.now(), `${TIME_LOG}${msg.label ? `: ${msg.label}` : ''}`), messages],
         }
 
       case LogType.END:
         return {
           level: 'debug',
-          messages: [StaticLogger.timeRange(msg.data, Date.now(), `timeEnd${msg.label ? `: ${msg.label}` : ''}`), messages],
+          messages: [StaticLogger.timeRange(msg.data, Date.now(), `${TIME_END}${msg.label ? `: ${msg.label}` : ''}`), messages],
         }
     }
   }

@@ -1,19 +1,5 @@
 import { FATAL, LEVELS, loggingRules, OFF, STANDART_LEVELS } from '../logging.rules'
 
-/*
-PARAMS:
-level: string
-debugLevels: string[]
-moduleDebugLevels: string[]
-allowedLevels? : string | string[] | null
-isModule?: boolean | null
-isDev?: boolean | null
-showDebug?: boolean | null
-showCategory?: boolean | null
-showLogger?: boolean | null
-showLog?: boolean | null
-*/
-
 describe('logging rules', () => {
   const levels = STANDART_LEVELS.concat('custom')
 
