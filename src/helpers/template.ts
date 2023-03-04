@@ -29,7 +29,7 @@ export const transformTemplate = ([tmp, ...args]: Template) => {
   const { messages, meta } = arr.reduce(
     (acc, cur, idx) => {
       if (!idx && typeof cur === 'string') {
-        acc.messages.push(cur.replace(/^([\s]+)?\n/, ''))
+        acc.messages.push(cur.replace(/^([\s]+)?\n(\s+)?/, ''))
         return acc
       }
 

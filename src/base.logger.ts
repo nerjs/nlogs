@@ -58,7 +58,7 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
 
     if (options?.index) this.meta.set('index', options.index)
     if (options?.show != null) this.options.show = options.show
-    ;['traceStore', 'categoriesAllowedList', 'debugAllowedList', 'formatter', 'reader', 'out', 'traceStore', 'options'].forEach(key => {
+    ;['traceStore', 'categoriesAllowedList', 'debugAllowedList', 'formatter', 'reader', 'outLogs', 'traceStore', 'options'].forEach(key => {
       Object.defineProperty(this, key, {
         value: this[key],
         enumerable: false,

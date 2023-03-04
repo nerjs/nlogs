@@ -48,6 +48,13 @@ export class Details {
     return this.reserved._module
   }
 
+  get<T = any>(key: string): T | undefined {
+    if (key in this.details) return this.details[key]
+    if (key in this.hidden) return this.hidden[key]
+    if (key in this.reserved) return this.reserved[key]
+    return undefined
+  }
+
   assign(obj: object) {
     for (const key in obj) this.details[key] = obj[key]
   }
