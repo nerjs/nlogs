@@ -10,10 +10,8 @@ export type MainTemplate = Template<((info: LogInfo) => any) | number | string |
 export class TemplateLogger extends BaseLogger<ITemplateLoggerOptions> {
   private templateString: MainTemplate
 
-  setTemplate(...tmp: MainTemplate) {
+  template(...tmp: MainTemplate) {
     this.templateString = tmp
-
-    console.log([...tmp[0][0]])
   }
 
   protected readMessages(level: string, std: string, msgs: any[]) {

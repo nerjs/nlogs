@@ -5,7 +5,7 @@ import { Logger } from '../logger'
 import { ConsoleOut } from '../utils/console.out'
 import { StringFormatter } from '../utils/string.formatter'
 
-describe('main logger tests', () => {
+describe('Main logger', () => {
   let logger: Logger
   let stdout: PassThrough
 

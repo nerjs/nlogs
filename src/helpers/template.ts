@@ -25,17 +25,16 @@ export const interleave = (strings: readonly string[], interpolations: any[]): a
 
 export const transformTemplate = ([tmp, ...args]: Template) => {
   const arr = interleave(tmp, args)
-
   const { messages, meta } = arr.reduce(
     (acc, cur, idx) => {
-      if (!idx && typeof cur === 'string') {
-        acc.messages.push(cur.replace(/^([\s]+)?\n(\s+)?/, ''))
-        return acc
-      }
-
       if (idx === arr.length - 1 && typeof cur === 'string') {
         const lastStr = cur.replace(/[\s\n]+$/, '')
         if (lastStr) acc.messages.push(lastStr)
+        return acc
+      }
+
+      if (!idx && typeof cur === 'string') {
+        acc.messages.push(cur.replace(/^([\s]+)?\n(\s+)?/, ''))
         return acc
       }
 
@@ -62,13 +61,9 @@ export const transformTemplate = ([tmp, ...args]: Template) => {
     { messages: [], meta: [] },
   )
 
-  messages.push('')
-
   if (messages.length && typeof messages[messages.length - 1] === 'string' && !messages[messages.length - 1]) messages.pop()
   if (messages.length && typeof messages[messages.length - 1] === 'string' && messages[messages.length - 1].endsWith('\n'))
     messages[messages.length - 1] = messages[messages.length - 1].replace(/[\n\s]+$/, '')
-
-  console.log({ messages })
 
   return [...messages, ...meta]
 }

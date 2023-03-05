@@ -9,18 +9,22 @@ export class AllowedList {
   private allowedList = new Map<string, Set<string>>()
   private deniedList = new Map<string, Set<string>>()
 
-  constructor(raw?: string, delimiter: string = DELIMITER) {
-    ;(raw || '')
-      .split(delimiter)
-      .map(str => str.trim())
-      .filter(Boolean)
-      .forEach(str => this.parseStringItem(str))
+  constructor(raw?: string, private readonly delimiter: string = DELIMITER) {
+    this.update(raw || '')
   }
 
   allow(category: string, module?: string | false): boolean {
     if (!this.allowedList.size && !this.deniedList.size) return true
     if (module) return this.allowModule(category, module)
     return this.allowApp(category)
+  }
+
+  update(raw: string) {
+    raw
+      .split(this.delimiter)
+      .map(str => str.trim())
+      .filter(Boolean)
+      .forEach(str => this.parseStringItem(str))
   }
 
   private allowApp(category: string): boolean {

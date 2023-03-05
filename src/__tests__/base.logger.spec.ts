@@ -8,7 +8,6 @@ import { ConsoleOut } from '../utils/console.out'
 import { JsonFormatter } from '../utils/json.formatter'
 import { Mod } from '../utils/mod'
 import { StringFormatter } from '../utils/string.formatter'
-import { AllowedList } from '../utils/allowed.list'
 
 describe('Base logger', () => {
   let stdout: PassThrough
@@ -223,7 +222,7 @@ describe('Base logger', () => {
   describe('use strict levels rules', () => {
     beforeEach(() => {
       BaseLogger.loggerOptions.debugLevels = ['trace', 'debug']
-      BaseLogger.debugAllowedList = new AllowedList('!')
+      BaseLogger.debugAllowedList.update('!')
       BaseLogger.formatter = new StringFormatter()
     })
 

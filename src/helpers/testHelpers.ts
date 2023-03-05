@@ -273,7 +273,7 @@ export const createOptionsChecker = <O extends OptionsMainKeys>(optionsKey: O) =
   }
 }
 
-export const testStandartLevels = (TestLogger: typeof BaseLogger) => {
+export const testStandartLevels = (TestLogger: typeof BaseLogger, before?: (logger: any) => any) => {
   describe('standart levels', () => {
     const outLevels = ['trace', 'debug', 'log', 'info']
     const errLevels = ['warn', 'error', 'fatal']
@@ -295,6 +295,7 @@ export const testStandartLevels = (TestLogger: typeof BaseLogger) => {
       TestLogger.outLogs = new ConsoleOut(stdout, stderr)
       TestLogger.formatter = new JsonFormatter()
       logger = new TestLogger(null, { show: true })
+      before?.(logger)
     })
     ;[...outLevels, ...errLevels].forEach(level => {
       it(`level ${level}`, () => {
