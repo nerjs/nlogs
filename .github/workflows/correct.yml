@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Dependencies installation
         run: npm install
-      - name: Lint
+      - name: run linter
         run: npm run lint
 
   tests:
@@ -29,8 +29,10 @@ jobs:
         uses: actions/checkout@v3
       - name: Dependencies installation
         run: npm install
-      - name: Lint
-        run: npm run test
+      - name: run dev tests
+        run: npm run test -- --bail=2 --ci --coverage=true --runInBand --coverageReporters=text
+      - name: run prod tests
+        run: NODE_ENV=production npm run test -- --bail=2 --ci --coverage=false --runInBand
 
   try-build:
     runs-on: ubuntu-latest
@@ -39,5 +41,5 @@ jobs:
         uses: actions/checkout@v3
       - name: Dependencies installation
         run: npm install
-      - name: Lint
+      - name: run build
         run: npm run build

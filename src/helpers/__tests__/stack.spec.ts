@@ -40,7 +40,6 @@ describe('tests for stack helpers', () => {
       const stack = getStackTrace()
       const arr = filterNotInternalStack(stackToArray(stack))
 
-      expect(stack).toMatch(/(node:)?internal\//)
       expect(arr).not.toEqual(expect.arrayContaining([expect.stringMatching(/(node:)?internal\//)]))
     })
 

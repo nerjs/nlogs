@@ -10,11 +10,8 @@ describe('Template logger', () => {
   let logger: TemplateLogger
   let stdout: PassThrough
 
-  beforeAll(() => {
-    TemplateLogger.formatter = new StringFormatter()
-  })
-
   beforeEach(() => {
+    TemplateLogger.formatter = new StringFormatter()
     stdout = new PassThrough({ encoding: 'utf-8' })
     TemplateLogger.outLogs = new ConsoleOut(stdout, stdout)
     logger = new TemplateLogger(DEFAULT_CATEGORY)

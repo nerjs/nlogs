@@ -70,7 +70,7 @@ export abstract class AbstractBaseLogger<O extends IAbstractBaseLoggerOptions, T
         _std: std,
         _traceIds: this.traceStore.traceIds,
       }),
-      this.traceStore.details ? StaticLogger.details(this.traceStore.details) : StaticLogger.empty(),
+      StaticLogger.details(this.traceStore.details),
       this.options.hiddenDetails ? StaticLogger.hiddenDetails(this.options.hiddenDetails) : StaticLogger.empty(),
       ...msgs,
     ])

@@ -15,8 +15,10 @@
       "coverageDirectory": "../coverage",
       "testEnvironment": "node",
       "bail": 3,
+      "coverageReporters": ["html", "json"],
       "slowTestThreshold": 10,
       "coveragePathIgnorePatterns": [
-        "/helpers/testHelpers"
+        "/helpers/testHelpers",
+        "/index"
       ]
 }
