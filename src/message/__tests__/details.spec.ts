@@ -168,4 +168,29 @@ describe('details', () => {
       )
     })
   })
+
+  describe('method get()', () => {
+    it('get value from  main details object', () => {
+      const key = 'key'
+      const value = 'value'
+      details.assign({ [key]: value })
+      expect(details.get(key)).toEqual(value)
+    })
+
+    it('get value from  hidden details object', () => {
+      const key = 'key'
+      const value = 'value'
+      details.hiddenAssign({ [key]: value })
+      expect(details.get(key)).toEqual(value)
+    })
+
+    it('get value from  reserved details object', () => {
+      details.setTime(new TimeDetails(123))
+      expect(details.get('_times')).toEqual(expect.arrayContaining([expect.any(TimeDetails)]))
+    })
+
+    it('empty value', () => {
+      expect(details.get('some key')).not.toBeDefined()
+    })
+  })
 })

@@ -37,5 +37,7 @@
     "dist",
     "scripts"
   ],
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts"
+  ]
 }

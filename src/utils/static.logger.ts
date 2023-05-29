@@ -25,6 +25,7 @@ import { MetaInfo } from '../helpers/types'
 import { ModDetails } from '../message/mod.details'
 import { TimeDetails } from '../message/time.details'
 import { TimeRange } from '../message/time.range'
+import { prettyArray, prettyList, prettyValue } from '../helpers/string'
 
 export class StaticLogger {
   static toMetaInfo(key: symbol, value: any) {
@@ -108,6 +109,18 @@ export class StaticLogger {
 
   static interpolate(data: any[]) {
     return this.toMetaInfo(INTERPOLATE, data)
+  }
+
+  static pretty(value: any, wrap?: boolean) {
+    return prettyValue(value, wrap)
+  }
+
+  static prettyArray(arr: any[], wrap?: boolean, wrapItem?: boolean) {
+    return prettyArray(arr, wrap, wrapItem)
+  }
+
+  static prettyList(list: any | any[], wrap?: boolean, wrapItem?: boolean) {
+    return prettyList(list, wrap, wrapItem)
   }
 
   static empty() {

@@ -39,6 +39,13 @@ describe('error details', () => {
     expect(error.hasDetails).toBeTruthy()
   })
 
+  it('add Error.cause to details', () => {
+    const cause = 'some value'
+    const testError = new Error('Some message', { cause })
+    const error = new ErrorDetails(testError)
+    expect(error.details).toEqual({ cause })
+  })
+
   it('to json', () => {
     const testError = new FieldError('message')
     const error = new ErrorDetails(testError)

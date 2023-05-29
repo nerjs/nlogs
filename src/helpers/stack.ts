@@ -10,14 +10,14 @@ export const getStackTrace = (fn?: any) => {
   const handleObject: StackObj = { stack: '' }
   Error.stackTraceLimit = Infinity
   Error.prepareStackTrace = function (_err: any, _cs: any) {
-    return handleObject
+    return handleObject.stack
   }
 
   Error.captureStackTrace(handleObject, fn || getStackTrace)
-
+  const stack = handleObject.stack
   Error.stackTraceLimit = originalLimit
   Error.prepareStackTrace = originalPrepare
-  return handleObject.stack
+  return stack
 }
 
 export const filterNotInternalStack = (stack: any[]): string[] => {
@@ -42,7 +42,7 @@ export const filterNotInternalStack = (stack: any[]): string[] => {
 
 export const stackToArray = (stack: string | string[]) => (Array.isArray(stack) ? stack : `${stack}`.split('\n'))
 
-export const getTopPath = (str: string): string =>
+export const clearStackPath = (str: string): string =>
   str
     .replace(/^(.*)\((.*)\)/, '$2')
     ?.replace(/([:0-9]+)$/, '')
@@ -51,5 +51,5 @@ export const getTopPath = (str: string): string =>
 export const getTopStackFile = (fn?: any): string | null => {
   const stack = filterNotInternalStack(stackToArray(getStackTrace(fn)))
   if (!stack.length) return null
-  return getTopPath(stack[0])
+  return clearStackPath(stack[0])
 }

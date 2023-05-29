@@ -17,14 +17,30 @@ export const stringToBoolean = (str?: string | undefined, def?: boolean) => {
   return !!def
 }
 
-export const formatList = (list: boolean | string | number | (string | number)[]): string => {
-  if (typeof list === 'boolean') return formatList(`${list}`.toUpperCase())
-  if (!Array.isArray(list)) return formatList([`${list}`])
-  const nlist = [...list].map(val => (typeof val === 'boolean' ? `${val}`.toUpperCase() : val)).map(str => `"${`${str}`.trim()}"`)
-  if (!nlist.length) return ''
-  if (nlist.length === 1) return nlist[0]
+export const toString = (value: any): string => {
+  if (value instanceof Date) return value.toJSON()
+  if (
+    typeof value === 'string' ||
+    typeof value === 'symbol' ||
+    (value && typeof value === 'object' && 'toString' in value && typeof value.toString === 'function')
+  )
+    return value.toString().trim()
+  return `${value}`.trim()
+}
 
-  const last = nlist.pop()
+export const prettyValue = (value: any, wrap?: boolean): string => {
+  const str = toString(value)
+  const mw = /( |\s)/.test(str)
+  return mw || wrap ? `"${str}"` : str
+}
 
-  return `${nlist.join(', ')} and ${last}`
+export const prettyArray = (arr: any[], wrap?: boolean, wrapItem?: boolean): string => {
+  const list = arr.map(value => prettyValue(value, wrapItem)).join(', ')
+
+  return wrap || arr.length ? `[${list}]` : list
+}
+
+export const prettyList = (list: any | any[], wrap?: boolean, wrapItem?: boolean): string => {
+  if (!Array.isArray(list)) return prettyValue(list, wrapItem)
+  return prettyArray(list, wrap, wrapItem)
 }

@@ -15,5 +15,8 @@
       "coverageDirectory": "../coverage",
       "testEnvironment": "node",
       "bail": 3,
-      "slowTestThreshold": 10
+      "slowTestThreshold": 10,
+      "coveragePathIgnorePatterns": [
+        "/helpers/testHelpers"
+      ]
 }

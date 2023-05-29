@@ -95,10 +95,23 @@ describe('Template logger', () => {
     })
   })
 
-  it('clear last spaces', () => {
+  it('clear last spaces after string', () => {
     logger.template`
       some string
-      last             
+      last  
+    `
+
+    logger.info()
+    const output = stdout.read()
+
+    expect(output).toMatch(new RegExp('last\n$'))
+  })
+
+  it('clear last spaces after metadata', () => {
+    logger.template`
+      some string
+      last  
+      ${TemplateLogger.category('category')}
     `
 
     logger.info()

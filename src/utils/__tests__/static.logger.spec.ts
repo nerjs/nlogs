@@ -43,4 +43,31 @@ describe('static logger util', () => {
       expect(range.delta.label).toEqual(label)
     })
   })
+
+  describe('pretty helpers', () => {
+    ;[
+      {
+        name: 'pretty() custom string',
+        fn: () => StaticLogger.pretty('custom string'),
+      },
+      {
+        name: 'prettyArray() custom array',
+        fn: () => StaticLogger.prettyArray(['first', 'second']),
+      },
+      {
+        name: 'prettyList() once item',
+        fn: () => StaticLogger.prettyList('custom string'),
+      },
+      {
+        name: 'prettyList() custom array',
+        fn: () => StaticLogger.prettyList(['first', 'second']),
+      },
+    ].forEach(({ name, fn }) => {
+      it(name, () => {
+        const txt = fn()
+
+        expect(txt).toEqual(expect.any(String))
+      })
+    })
+  })
 })

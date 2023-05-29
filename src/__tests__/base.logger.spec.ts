@@ -8,6 +8,7 @@ import { ConsoleOut } from '../utils/console.out'
 import { JsonFormatter } from '../utils/json.formatter'
 import { Mod } from '../utils/mod'
 import { StringFormatter } from '../utils/string.formatter'
+import { Meta } from '../message/meta'
 
 describe('Base logger', () => {
   let stdout: PassThrough
@@ -72,6 +73,16 @@ describe('Base logger', () => {
       logger.trace()
 
       expect(stdout.read()).toBeNull()
+    })
+
+    it('missing meta service', () => {
+      const { defaultMeta } = BaseLogger
+      BaseLogger.defaultMeta = defaultMeta.clone()
+      // @ts-expect-error
+      delete BaseLogger.defaultMeta.service
+
+      const logger = new BaseLogger()
+      expect(logger.meta.service).toEqual(logger.module.name)
     })
   })
 

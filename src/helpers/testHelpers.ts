@@ -4,7 +4,7 @@ import { LogReader } from '../utils/log.reader'
 import { StaticLogger } from '../utils/static.logger'
 import { StringFormatter } from '../utils/string.formatter'
 import { ILogger } from './types'
-import { FALSE_VARIANTS, formatList, TRUE_VARIANTS, uuid } from './string'
+import { FALSE_VARIANTS, prettyList, TRUE_VARIANTS, uuid } from './string'
 import * as options from '../options'
 import { ILoggerEnv } from '../utils/types'
 import { BaseLogger } from '../base.logger'
@@ -66,7 +66,7 @@ const createIvRunner = <O extends OptionsMainKeys, T>(
 
     if (defaultName || defaultValue !== undefined) {
       it(`from default value (${defaultValue})${
-        defaultName ? ` (constant ${formatList(defaultName)})` : ''
+        defaultName ? ` (constant ${prettyList(defaultName)})` : ''
       } with missing variable`, async () => {
         const value = await load()
         expect(value).toEqual(defaultValue)
@@ -102,7 +102,7 @@ const createChecker = <O extends OptionsMainKeys, K extends OptionsKeys<O>, T, D
       let i = pi * 1000
 
       for (const variableName of variables) {
-        it(`from ${formatList(variableName)}`, async () => {
+        it(`from ${prettyList(variableName)}`, async () => {
           const [env, val] = nextCorrectValue(i++, defaultValue)
           process.env[variableName] = env
           const value = await load()
@@ -122,7 +122,7 @@ const createChecker = <O extends OptionsMainKeys, K extends OptionsKeys<O>, T, D
     (load: LoadFn<O, K>, currentVariable: IEnv, variableList: IEnv[], defaultValue: D | undefined, pi: number) => {
       let i = pi * 1000
 
-      it(`from ${formatList(currentVariable)} with exists ${formatList(variableList)}`, async () => {
+      it(`from ${prettyList(currentVariable)} with exists ${prettyList(variableList)}`, async () => {
         const [env, val] = nextCorrectValue(i++, defaultValue)
 
         const missingKeys = variableList.map((_, i) => nextCorrectValue(i++, defaultValue))
@@ -178,7 +178,7 @@ export const createOptionsChecker = <O extends OptionsMainKeys>(optionsKey: O) =
     (load: LoadFn<O, OptionsKeys<O>>, variables: IEnv[], defaultValue?: boolean) => {
       const check = (typeVal: boolean, variableKey: IEnv, arr: string[]) => {
         for (const str of arr) {
-          it(`check ${formatList(typeVal)} from ${formatList(variableKey)} and string value ${formatList(str)}`, async () => {
+          it(`check ${prettyList(typeVal)} from ${prettyList(variableKey)} and string value ${prettyList(str)}`, async () => {
             process.env[variableKey] = str
             const value = await load()
 
@@ -203,7 +203,7 @@ export const createOptionsChecker = <O extends OptionsMainKeys>(optionsKey: O) =
       })
     },
     (load: LoadFn<O, OptionsKeys<O>>, currentVariable: IEnv, variableList: IEnv[]) => {
-      it(`from ${formatList(currentVariable)} with exists ${formatList(variableList)}`, async () => {
+      it(`from ${prettyList(currentVariable)} with exists ${prettyList(variableList)}`, async () => {
         process.env[currentVariable] = TRUE_VARIANTS[0]
         variableList.forEach(vk => {
           process.env[vk] = FALSE_VARIANTS[0]
@@ -230,7 +230,7 @@ export const createOptionsChecker = <O extends OptionsMainKeys>(optionsKey: O) =
         describe('Checking all variants', () => {
           for (const variableName of variables) {
             for (const variant of variants) {
-              it(`check variant ${formatList(variant)} from ${formatList(variableName)}`, async () => {
+              it(`check variant ${prettyList(variant)} from ${prettyList(variableName)}`, async () => {
                 process.env[variableName] = variant
                 const value = await load()
 
@@ -249,7 +249,7 @@ export const createOptionsChecker = <O extends OptionsMainKeys>(optionsKey: O) =
       },
       (load: LoadFn<O, OptionsKeys<O>>, currentVariable: IEnv, variableList: IEnv[], defaultValue?: T) => {
         if (!variants.length) throw new Error('The number of options to check enum cannot be 0')
-        it(`from ${formatList(currentVariable)} with exists ${formatList(variableList)}`, async () => {
+        it(`from ${prettyList(currentVariable)} with exists ${prettyList(variableList)}`, async () => {
           process.env[currentVariable] = variants[0]
           variableList.forEach(vk => {
             process.env[vk] = variants[1] || defaultValue || uuid()
