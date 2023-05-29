@@ -58,7 +58,7 @@ describe('tests for fs helpers', () => {
       const file = await (async () => {
         for (const f of files) {
           try {
-            if ((await stat(f)).isDirectory()) return f
+            if ((await stat(join(process.env.HOME, f))).isDirectory()) return f
           } catch (err) {
             if (err.code === 'ENOENT') continue
             throw err
@@ -66,7 +66,11 @@ describe('tests for fs helpers', () => {
         }
       })()
 
-      expect(searchFileRecursive('~/', file)).toEqual(join(process.env.HOME, file))
+      if (file) {
+        expect(searchFileRecursive('~/', file)).toEqual(join(process.env.HOME, file))
+      } else {
+        console.log(`Missing any file in user directore`)
+      }
     })
   })
 })
