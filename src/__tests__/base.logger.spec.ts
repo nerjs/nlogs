@@ -8,7 +8,6 @@ import { ConsoleOut } from '../utils/console.out'
 import { JsonFormatter } from '../utils/json.formatter'
 import { Mod } from '../utils/mod'
 import { StringFormatter } from '../utils/string.formatter'
-import { Meta } from '../message/meta'
 
 describe('Base logger', () => {
   let stdout: PassThrough
