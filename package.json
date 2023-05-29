@@ -15,9 +15,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
   },
-  "bin": {
-    "nlogs": "./bin"
-  },
+  "files": [
+    "dist/*"
+  ],
   "keywords": [
     "logs",
     "logger",

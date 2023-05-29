@@ -35,7 +35,8 @@
   "exclude": [
     "node_modules",
     "dist",
-    "scripts"
+    "scripts",
+    "**/*.spec.ts"
   ],
   "include": [
     "src/**/*.ts"
