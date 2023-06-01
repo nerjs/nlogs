@@ -1,45 +1,43 @@
 name: Checking the correctness of files
 
-
-
 on:
   push:
     branches: 
       - master
-      - rc
+      - main
       - develop
-    tags:
-      - "*"
 jobs:
-  
-  eslint:
-    runs-on: ubuntu-latest
+  try-build:
+    strategy:
+      matrix:
+        node-version:
+          - 14
+          - 16
+          - 18
+          - 20
+        os: 
+          - ubuntu-latest
+          - ubuntu-20.04
+    runs-on:  ${{ matrix.os }}
+    name: Run linter, tests antd Trying to build [os:${{ matrix.os }}; node:${{ matrix.node-version }}]
     steps:
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Dependencies installation
         run: npm install
+      - name: check versions
+        run: |
+          node -v
+          npm -v
       - name: run linter
         run: npm run lint
-
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Dependencies installation
-        run: npm install
-      - name: run dev tests
+      - name: run tests in development env
         run: npm run test -- --bail=2 --ci --coverage=true --runInBand --coverageReporters=text
-      - name: run prod tests
+      - name: run tests in production env
         run: NODE_ENV=production npm run test -- --bail=2 --ci --coverage=false --runInBand
-
-  try-build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Dependencies installation
-        run: npm install
       - name: run build
         run: npm run build
