@@ -9,7 +9,7 @@ name: Create Release
 jobs:
 
   lint-and-tests:
-    name: Run linter ant tests
+    name: Run linter and tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source

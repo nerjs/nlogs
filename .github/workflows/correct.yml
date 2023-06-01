@@ -18,7 +18,7 @@ jobs:
           - ubuntu-latest
           - ubuntu-20.04
     runs-on:  ${{ matrix.os }}
-    name: Run linter, tests antd Trying to build [os:${{ matrix.os }}; node:${{ matrix.node-version }}]
+    name: Run linter, tests and Trying to build [os:${{ matrix.os }}; node:${{ matrix.node-version }}]
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
