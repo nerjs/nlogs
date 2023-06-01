@@ -5,7 +5,7 @@ import { Cat, Category } from './utils/category'
 import { LogReader } from './utils/log.reader'
 import { Mod } from './utils/mod'
 import { ModResolver } from './utils/mod.resolver'
-import { TraceStore } from './utils/trace.store'
+import { TraceStore, WithTraceId } from './utils/trace.store'
 import { getTopStackFile } from './helpers/stack'
 import { IFormatter, IOutLogger } from './utils/types'
 import { ConsoleOut } from './utils/console.out'
@@ -131,7 +131,10 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
     this.traceStore.mergeDetails(traceDetails)
   }
 
-  static run<R extends MaybePromise<any>>(callback: () => R): R {
-    return this.traceStore.run(callback)
+  static run<R extends MaybePromise<any>>(callback: () => R): R
+  static run<R extends MaybePromise<any>>(traceId: string, callback: () => R): R
+  static run<R extends MaybePromise<any>, D extends WithTraceId>(details: D, callback: () => R): R
+  static run<R extends MaybePromise<any>, D extends WithTraceId>(callBackOrDetOtrId: (() => R) | string | D, callback?: () => R): R {
+    return this.traceStore.run(callBackOrDetOtrId as any, callback)
   }
 }
