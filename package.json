@@ -23,6 +23,9 @@
     "logger",
     "console"
   ],
+  "engines": {
+    "node": ">=16"
+  },
   "devDependencies": {
     "@types/jest": "29.2.4",
     "@typescript-eslint/eslint-plugin": "5.47.0",
