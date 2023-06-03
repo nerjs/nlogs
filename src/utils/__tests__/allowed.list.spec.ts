@@ -37,7 +37,7 @@ describe('Parsing a string to get a allowed list', () => {
     })
 
     it('Use of any delimiter', () => {
-      const delimiter = '-'
+      const delimiter = '~'
       const alist = new AllowedList(`category1${delimiter}!category2`, delimiter)
 
       expect(alist.allow('category1')).toBeTruthy()

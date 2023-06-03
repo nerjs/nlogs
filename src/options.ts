@@ -3,6 +3,7 @@ import { IAbstractBaseLoggerOptions } from './abstract.base.logger'
 import {
   DEFAULT_CATEGORY,
   DEFAULT_CHECK_CACHE_TIMEOUT_MS,
+  DEFAULT_DEBUG_ALLOWED_LIST,
   DEFAULT_DEBUG_LEVELS,
   DEFAULT_FORMATTER,
   DEFAULT_LOG_ON_START,
@@ -123,7 +124,7 @@ const categoriesAllowedList: string | undefined = (
   CATEGORIES
 )?.trim()
 
-const debugAllowedList: string | undefined = (NLOGS_DEBUG || LOGGER_DEBUG || NODE_DEBUG || DEBUG)?.trim()
+const debugAllowedList: string | undefined = (NLOGS_DEBUG || LOGGER_DEBUG || NODE_DEBUG || DEBUG || DEFAULT_DEBUG_ALLOWED_LIST)?.trim()
 
 const defaultProject: string = (NLOGS_PROJECT || LOGGER_PROJECT || PROJECT)?.trim() || DEFAULT_PROJECT
 const defaultService: string = (NLOGS_SERVICE || LOGGER_SERVICE || SERVICE)?.trim() || DEFAULT_SERVICE

@@ -3,7 +3,8 @@ export const MODULE = '$'
 export const ALL = '*'
 export const SPECIAL_DELIMITER = ':'
 export const DELIMITER = ','
-export const NEGATION = '!'
+export const NEGATION = '-'
+export const NEGATION2 = '!'
 
 export class AllowedList {
   private allowedList = new Map<string, Set<string>>()
@@ -21,6 +22,7 @@ export class AllowedList {
 
   update(raw: string) {
     raw
+      .replace(new RegExp(`(,)?(\s+)?${NEGATION2}`, 'g'), `$1${NEGATION}`)
       .split(this.delimiter)
       .map(str => str.trim())
       .filter(Boolean)

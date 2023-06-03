@@ -4,6 +4,7 @@ import { testStandartLevels } from '../helpers/testHelpers'
 import { Logger } from '../logger'
 import { ConsoleOut } from '../utils/console.out'
 import { StringFormatter } from '../utils/string.formatter'
+import { AllowedList } from '../utils/allowed.list'
 
 describe('Main logger', () => {
   let logger: Logger
@@ -16,6 +17,8 @@ describe('Main logger', () => {
   beforeEach(() => {
     stdout = new PassThrough({ encoding: 'utf-8' })
     Logger.outLogs = new ConsoleOut(stdout, stdout)
+    Logger.loggerOptions.debugAllowedList = '*'
+    Logger.debugAllowedList = new AllowedList('*')
     logger = new Logger()
   })
 

@@ -5,7 +5,6 @@
 	"editor.foldingImportsByDefault": false,
 	"typescript.preferences.quoteStyle": "single",
 	"javascript.preferences.quoteStyle": "single",
-	"prettier.singleQuote": true,
 	"javascript.inlayHints.enumMemberValues.enabled": false,
 	"typescript.inlayHints.enumMemberValues.enabled": true,
 	"typescript.inlayHints.functionLikeReturnTypes.enabled": false

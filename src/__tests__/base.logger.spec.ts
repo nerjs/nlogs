@@ -16,7 +16,7 @@ describe('Base logger', () => {
   const originalOptions = { ...BaseLogger.loggerOptions }
 
   const currentPathname = getTopStackFile(getTopStackFile)
-  const currentModule = BaseLogger.moduleResolver.resolve(currentPathname)
+  const currentModule = BaseLogger.moduleResolver.resolve(currentPathname || '')
 
   beforeEach(() => {
     stdout = new PassThrough({ encoding: 'utf-8' })
@@ -36,7 +36,7 @@ describe('Base logger', () => {
     const logger = new BaseLogger()
     logger.log()
     expect(stdout.read()).toEqual(
-      expect.stringMatching(clearString(currentPathname.replace(currentModule.pathname, ''), /^\/?src\/?/, /^\/?dist\/?/)),
+      expect.stringMatching(clearString(currentPathname?.replace(currentModule.pathname, '') || '', /^\/?src\/?/, /^\/?dist\/?/)),
     )
   })
 
@@ -117,7 +117,7 @@ describe('Base logger', () => {
       value: module,
     })
 
-    logger.log()
+    logger.info()
     const obj = JSON.parse(stdout.read())
 
     expect(obj.details._app.name).toEqual(app.name)
@@ -146,6 +146,8 @@ describe('Base logger', () => {
       // @ts-ignore
       const { options } = logger
       const { hiddenDetails } = options
+
+      // @ts-ignore
       delete options.hiddenDetails
 
       logger.log()
