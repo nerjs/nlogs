@@ -108,6 +108,13 @@ describe('Parsing a string to get a allowed list', () => {
       expect(alist.allow('category', 'moduleName2')).toBeFalsy()
     })
 
+    it('Deny all modules by special symbol and allow all others', () => {
+      const alist = new AllowedList(`${NEGATION}${MODULE}`)
+
+      expect(alist.allow('category', 'moduleName1')).toBeFalsy()
+      expect(alist.allow('category2', false)).toBeTruthy()
+    })
+
     it('Allow all modules by special symbol and pattern', () => {
       const alist = new AllowedList(`${MODULE}${SPECIAL_DELIMITER}${ALL}`)
 

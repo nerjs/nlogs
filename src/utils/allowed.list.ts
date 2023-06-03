@@ -45,14 +45,14 @@ export class AllowedList {
   }
 
   private checkCategory(category: string, moduleName: string): boolean | null {
-    const appAllowed = this.allowedList.get(moduleName)
-    if (appAllowed?.has(category)) return true
-
     const appDenied = this.deniedList.get(moduleName)
     if (appDenied?.has(category)) return false
 
-    if (appAllowed?.has(ALL)) return true
+    const appAllowed = this.allowedList.get(moduleName)
+    if (appAllowed?.has(category)) return true
+
     if (appDenied?.has(ALL)) return false
+    if (appAllowed?.has(ALL)) return true
 
     return null
   }
@@ -60,12 +60,14 @@ export class AllowedList {
   private parseStringItem(str: string) {
     const isNegation = str.startsWith(NEGATION)
     const arr = str.split(SPECIAL_DELIMITER).map(s => s.trim())
-    //   .filter(Boolean)
+    // .filter(Boolean)
     if (isNegation) arr[0] = arr[0].slice(1)
+
+    if (!arr[0]) return this.parseStringItem(`${isNegation ? NEGATION : ''}${arr[1] || ALL}`)
     if (!arr[0] && arr.length === 1) return this.parseStringItem(`${NEGATION}${SPECIAL_DELIMITER}${ALL}`)
-    if (!arr[0]) return this.parseStringItem(`${isNegation ? NEGATION : ''}${arr[1]}`)
 
     const list = isNegation ? this.deniedList : this.allowedList
+    const reverceList = isNegation ? this.allowedList : this.deniedList
 
     if (arr.length === 1 && arr[0] === ALL) {
       if (!list.has(APP)) list.set(APP, new Set())
@@ -73,6 +75,14 @@ export class AllowedList {
 
       list.get(APP).add(ALL)
       list.get(MODULE).add(ALL)
+    } else if (arr.length === 1 && [MODULE, APP].includes(arr[0])) {
+      const reverceSymbol = arr[0] === MODULE ? APP : MODULE
+
+      if (!list.has(arr[0])) list.set(arr[0], new Set())
+      list.get(arr[0]).add(ALL)
+
+      if (!reverceList.has(reverceSymbol)) reverceList.set(reverceSymbol, new Set())
+      reverceList.get(reverceSymbol).add(ALL)
     } else if (arr.length === 1) {
       if (!list.has(APP)) list.set(APP, new Set())
       list.get(APP).add(arr[0])

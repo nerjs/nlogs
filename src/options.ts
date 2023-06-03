@@ -124,7 +124,8 @@ const categoriesAllowedList: string | undefined = (
   CATEGORIES
 )?.trim()
 
-const debugAllowedList: string | undefined = (NLOGS_DEBUG || LOGGER_DEBUG || NODE_DEBUG || DEBUG || DEFAULT_DEBUG_ALLOWED_LIST)?.trim()
+let debugAllowedList: string | undefined = (NLOGS_DEBUG || LOGGER_DEBUG || NODE_DEBUG || DEBUG)?.trim()
+if (debugAllowedList == null) debugAllowedList = DEFAULT_DEBUG_ALLOWED_LIST
 
 const defaultProject: string = (NLOGS_PROJECT || LOGGER_PROJECT || PROJECT)?.trim() || DEFAULT_PROJECT
 const defaultService: string = (NLOGS_SERVICE || LOGGER_SERVICE || SERVICE)?.trim() || DEFAULT_SERVICE

@@ -252,7 +252,9 @@ describe('Base logger', () => {
 
       const logger = new BaseLogger()
       logger.debug(BaseLogger.level('info'))
-      expect(stdout.read()).toBeNull()
+
+      const res = stdout.read()
+      expect(res).toBeNull()
     })
 
     it('If the strictLevelRules parameter is specified as false, the check will take place after a possible level override', async () => {
