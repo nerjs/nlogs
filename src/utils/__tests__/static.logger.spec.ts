@@ -1,4 +1,4 @@
-import { HIDDEN_DETAILS, IS_META_INFO, META_VALUE } from '../../helpers/symbols'
+import { HIDDEN_DETAILS, IS_META_INFO, META_VALUE, TIMERANGE } from '../../helpers/symbols'
 import { StaticLogger } from '../static.logger'
 import { TimeRange } from '../../message/time.range'
 
@@ -19,7 +19,7 @@ describe('static logger util', () => {
     it('time range without end time', () => {
       expect(StaticLogger.timeRange(123)).toEqual(
         expect.objectContaining({
-          [IS_META_INFO]: HIDDEN_DETAILS,
+          [IS_META_INFO]: TIMERANGE,
           [META_VALUE]: expect.any(TimeRange),
         }),
       )

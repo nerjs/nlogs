@@ -104,10 +104,10 @@ const formatterType: 'json' | 'light' | 'dark' | 'string' =
   NLOGS_FORMATTER && ['json', 'light', 'dark', 'string'].includes(NLOGS_FORMATTER)
     ? NLOGS_FORMATTER
     : LOGGER_FORMATTER && ['json', 'light', 'dark', 'string'].includes(LOGGER_FORMATTER)
-    ? LOGGER_FORMATTER
-    : NODE_ENV === 'production'
-    ? PRODUCTION_FORMATTER
-    : DEFAULT_FORMATTER
+      ? LOGGER_FORMATTER
+      : NODE_ENV === 'production'
+        ? PRODUCTION_FORMATTER
+        : DEFAULT_FORMATTER
 
 // :
 

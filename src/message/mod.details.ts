@@ -1,3 +1,6 @@
 export class ModDetails {
-  constructor(readonly name: string, readonly version?: string) {}
+  constructor(
+    readonly name: string,
+    readonly version?: string,
+  ) {}
 }

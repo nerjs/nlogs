@@ -10,7 +10,10 @@ export class AllowedList {
   private allowedList = new Map<string, Set<string>>()
   private deniedList = new Map<string, Set<string>>()
 
-  constructor(raw?: string, private readonly delimiter: string = DELIMITER) {
+  constructor(
+    raw?: string,
+    private readonly delimiter: string = DELIMITER,
+  ) {
     this.update(raw || '')
   }
 
@@ -22,7 +25,7 @@ export class AllowedList {
 
   update(raw: string) {
     raw
-      .replace(new RegExp(`(,)?(\s+)?${NEGATION2}`, 'g'), `$1${NEGATION}`)
+      .replace(new RegExp(`(,)?(\\s+)?${NEGATION2}`, 'g'), `$1${NEGATION}`)
       .split(this.delimiter)
       .map(str => str.trim())
       .filter(Boolean)

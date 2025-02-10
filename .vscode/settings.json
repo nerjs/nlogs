@@ -1,11 +1,11 @@
 {
-	"typescript.tsdk": "node_modules/typescript/lib",
-	"javascript.preferences.importModuleSpecifier": "project-relative",
-	"typescript.preferences.importModuleSpecifier": "project-relative",
-	"editor.foldingImportsByDefault": false,
-	"typescript.preferences.quoteStyle": "single",
-	"javascript.preferences.quoteStyle": "single",
-	"javascript.inlayHints.enumMemberValues.enabled": false,
-	"typescript.inlayHints.enumMemberValues.enabled": true,
-	"typescript.inlayHints.functionLikeReturnTypes.enabled": false
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "javascript.preferences.importModuleSpecifier": "project-relative",
+    "typescript.preferences.importModuleSpecifier": "project-relative",
+    "editor.foldingImportsByDefault": false,
+    "eslint.options": {
+      "overrideConfigFile": "./eslint.config.mjs",
+    },
+    "eslint.workingDirectories": ["./"],
+    "eslint.experimental.useFlatConfig": true
 }

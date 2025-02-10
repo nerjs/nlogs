@@ -112,7 +112,7 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
 
   static outLogs: IOutLogger = new ConsoleOut(process.stdout, process.stderr)
 
-  static traceStore: TraceStore<BaseTraceDetails> = new TraceStore()
+  static traceStore = new TraceStore<BaseTraceDetails>()
 
   static defaultMeta: Meta = new Meta(
     this.loggerOptions.defaultProject,
