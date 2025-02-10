@@ -7,6 +7,9 @@ import { ItemsTimers } from './utils/items.timer'
 export interface ILoggerOptions extends IBaseLoggerOptions {}
 
 export class Logger extends BaseLogger<ILoggerOptions> {
+  static timeOptions = timesOptions
+  static countOptions = countOptions
+
   private readonly timers = new ItemsTimers(this, Logger.timeOptions)
   private readonly counters = new ItemsCounters(this, Logger.countOptions)
 
@@ -43,7 +46,4 @@ export class Logger extends BaseLogger<ILoggerOptions> {
   timeEnd(label: string) {
     return this.timers.end(label)
   }
-
-  static timeOptions = timesOptions
-  static countOptions = countOptions
 }

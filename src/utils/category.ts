@@ -4,6 +4,7 @@ import { clearString } from '../helpers/string'
 
 type IClassType = abstract new (...args: any) => any
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 abstract class A {}
 type Instance = InstanceType<typeof A>
 

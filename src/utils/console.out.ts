@@ -3,7 +3,10 @@ import { IOutLogger } from './types'
 
 export class ConsoleOut implements IOutLogger {
   private readonly stderr: Writable
-  constructor(private readonly stdout: Writable, stderr?: Writable) {
+  constructor(
+    private readonly stdout: Writable,
+    stderr?: Writable,
+  ) {
     this.stderr = stderr || stdout
   }
 

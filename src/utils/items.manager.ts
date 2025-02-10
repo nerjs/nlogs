@@ -43,13 +43,16 @@ export interface ItemManagerOptions {
 export abstract class ItemsManager<D, O extends ItemManagerOptions> {
   private readonly state = new Map<string, LogItem<D>>()
   private readonly removed = new WeakSet<LogItem<D>>()
-  private tid: NodeJS.Timer
+  private tid: NodeJS.Timeout
 
   abstract readonly name: string
   protected abstract itemCallback(msg: ItemMsg<D>): ItemResult<D> | ItemResult<D>[]
   protected abstract defaultData: D
 
-  constructor(private readonly logger: ILogger, protected readonly options: O) {}
+  constructor(
+    private readonly logger: ILogger,
+    protected readonly options: O,
+  ) {}
 
   get size() {
     return this.state.size

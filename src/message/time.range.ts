@@ -15,8 +15,8 @@ export class TimeRange {
       ? toOrLabel instanceof Date
         ? toOrLabel
         : typeof toOrLabel === 'number'
-        ? new Date(toOrLabel)
-        : new Date()
+          ? new Date(toOrLabel)
+          : new Date()
       : new Date()
 
     if (this.from > this.to) throw new MsgNlogsError('The start time cannot be greater than the end time', { from: this.from, to: this.to })

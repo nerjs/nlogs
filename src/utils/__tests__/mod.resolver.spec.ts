@@ -41,6 +41,7 @@ describe('Module resolver', () => {
   })
 
   it('modules property', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     modResolver.app
     expect(modResolver.modules.size).toEqual(1)
     expect(modResolver.modules.get(modResolver.app.pathname)).toEqual(modResolver.app)

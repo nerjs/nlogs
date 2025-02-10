@@ -1,4 +1,3 @@
-/* eslint-disable prefer-rest-params */
 import {
   DEFAULT_CATEGORY,
   DEFAULT_CHECK_CACHE_TIMEOUT_MS,

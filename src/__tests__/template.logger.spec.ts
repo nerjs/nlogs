@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { PassThrough } from 'stream'
 import { DEFAULT_CATEGORY } from '../constants'
 import { testStandartLevels } from '../helpers/testHelpers'
@@ -101,7 +102,7 @@ describe('Template logger', () => {
     logger.info()
     const output = stdout.read()
 
-    expect(output).toMatch(new RegExp('last\n$'))
+    expect(output).toMatch(new RegExp('last\\n$'))
   })
 
   it('clear last spaces after metadata', () => {
@@ -114,6 +115,6 @@ describe('Template logger', () => {
     logger.info()
     const output = stdout.read()
 
-    expect(output).toMatch(new RegExp('last\n$'))
+    expect(output).toMatch(new RegExp('last\\n$'))
   })
 })
