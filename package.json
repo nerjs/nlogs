@@ -29,7 +29,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "3.2.0",
     "@eslint/js": "9.20.0",
-    "@types/debug": "4.1.8",
+    "@types/debug": "4.1.12",
     "@types/eslint__js": "8.42.3",
     "@types/jest": "29.5.14",
     "eslint": "9.20.0",
@@ -46,7 +46,7 @@
   "dependencies": {
     "@types/node": "22.13.4",
     "@types/pretty-time": "1.1.2",
-    "debug": "4.3.4",
+    "debug": "4.4.0",
     "pretty-time": "1.1.0"
   }
 }
