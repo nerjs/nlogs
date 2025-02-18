@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@types/node": "22.13.4",
-    "@types/pretty-time": "1.1.2",
+    "@types/pretty-time": "1.1.5",
     "debug": "4.4.0",
     "pretty-time": "1.1.0"
   }
