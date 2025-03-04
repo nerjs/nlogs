@@ -1,17 +1,17 @@
-name: Checking the correctness of files
+name: "CI: tests, linter and build"
 
 on:
   workflow_dispatch:
   push:
     branches: 
-      - main
+      - master
       - develop
       - dependencies
       - 'dependencies-**'
   pull_request:
     # Sequence of patterns matched against refs/heads
     branches:
-      - main
+      - master
       - dependencies
       
 
@@ -22,6 +22,7 @@ jobs:
         node-version:
           - 18
           - 20
+          - 22
         os: 
           - ubuntu-22.04
           - ubuntu-20.04
@@ -45,7 +46,7 @@ jobs:
       - name: run build
         run: npm run build
       - name: run tests in development env
-        run: npm run test -- --bail=2 --ci --coverage=true --runInBand --coverageReporters=text
+        run: NODE_ENV=development npm run test -- --bail=2 --ci --coverage=true --runInBand --coverageReporters=text
       - name: run tests in production env
         run: NODE_ENV=production npm run test -- --bail=2 --ci --coverage=false --runInBand
 

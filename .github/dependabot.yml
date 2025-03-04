@@ -11,4 +11,31 @@ updates:
       interval: "weekly" 
     assignees:
       - "nerjs"
+    labels:
+      - "dependencies"
+      - "bot"
     target-branch: "dependencies"
+    open-pull-requests-limit: 5
+    groups:
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/node"
+
+      linter:
+        patterns:
+          - "eslint"
+          - "prettier"
+          - "@eslint/js"
+          - "@types/eslint__js"
+          - "@eslint/eslintrc"
+          - "eslint-config-prettier"
+          - "eslint-plugin-prettier"
+          - "typescript-eslint"
+
+      jest:
+        patterns:
+          - "jest"
+          - "@types/jest"
+          - "jest-watch-typeahead"
+          - "ts-jest"
