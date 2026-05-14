@@ -56,19 +56,27 @@ NLOGS_CATEGORY="auth, payments, -auth:internal" node app.js
 
 ## Trace context
 
-`Logger.run` opens an AsyncLocalStorage context. Every log inside the callback - and any async work it spawns - carries the same `traceId`.
-
-```ts
-Logger.run({ userId: '42' }, async () => {
-  logger.info('handling request')
-  await processOrder()
-})
-```
+`Logger.run` opens an AsyncLocalStorage context. Every log inside the callback - and any async work it spawns - carries the same `traceId` and shared `details`.
 
 A string argument sets the `traceId` directly:
 
 ```ts
 Logger.run(req.headers['x-trace-id'], () => handler(req))
+```
+
+An object argument generates a fresh `traceId` and attaches arbitrary fields to `details`:
+
+```ts
+Logger.run({ userId: '42' }, async () => {
+  logger.info('handling request')   // logs include userId in details
+  await processOrder()
+})
+```
+
+Pass `traceId` explicitly to combine both:
+
+```ts
+Logger.run({ traceId: 'abc-123', userId: '42' }, () => handler())
 ```
 
 Nested calls chain: the outer traceId is preserved in `_traceIds`.
@@ -81,11 +89,12 @@ await query()
 logger.timeEnd('db')
 
 const counter = logger.count('events')
-counter()        // increments and logs
+counter.log()    // increments and logs
+counter.log()
 counter.end()    // closes the counter
 ```
 
-`logger.time(label)` and `logger.count(label)` return a handle. Calling it logs a checkpoint; `.end()` finalises and frees the slot. Without a label each call returns a fresh handle.
+`logger.time(label)` and `logger.count(label)` return a handle with `.log()` and `.end()` methods. Calling the handle itself (`counter()`) is equivalent to `.end()`. Without a label each call returns a fresh handle. Repeated `logger.count(label)` with the same label keeps incrementing the same counter until `.end()`.
 
 ## Formatters
 
@@ -127,18 +136,18 @@ const app = await NestFactory.create(AppModule, {
 
 ## Template logger
 
-`TemplateLogger` injects a fixed template applied to every message:
+`TemplateLogger` injects a fixed template applied to every message. Use it as a tagged template literal:
 
 ```ts
 import { TemplateLogger, Logger } from 'nlogs'
 
-class RequestLogger extends TemplateLogger {
-  constructor(req: Request) {
-    super('http')
-    this.template('[', Logger.highlight(req.method), req.url, ']')
-  }
-}
+const logger = new TemplateLogger('http')
+logger.template`[${info => info.meta.level}] ${info => info.message}`
+
+logger.info('request received')
 ```
+
+Inside the template, a function receives the current `LogInfo` and returns the substituted value. Plain values are inserted as-is.
 
 ## License
 

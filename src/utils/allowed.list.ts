@@ -63,11 +63,9 @@ export class AllowedList {
   private parseStringItem(str: string) {
     const isNegation = str.startsWith(NEGATION)
     const arr = str.split(SPECIAL_DELIMITER).map(s => s.trim())
-    // .filter(Boolean)
     if (isNegation) arr[0] = arr[0].slice(1)
 
     if (!arr[0]) return this.parseStringItem(`${isNegation ? NEGATION : ''}${arr[1] || ALL}`)
-    if (!arr[0] && arr.length === 1) return this.parseStringItem(`${NEGATION}${SPECIAL_DELIMITER}${ALL}`)
 
     const list = isNegation ? this.deniedList : this.allowedList
     const reverceList = isNegation ? this.allowedList : this.deniedList
