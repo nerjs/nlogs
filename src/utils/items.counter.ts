@@ -4,7 +4,7 @@ import { StaticLogger } from './static.logger'
 export interface ItemCounterOptions extends ItemManagerOptions {}
 
 export class ItemsCounters extends ItemsManager<number, ItemCounterOptions> {
-  readonly name = 'timer'
+  readonly name = 'counter'
   protected defaultData = 0
 
   protected itemCallback(msg: ItemMsg<number>): ItemResult<number> {

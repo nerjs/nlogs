@@ -43,7 +43,8 @@ export interface ItemManagerOptions {
 export abstract class ItemsManager<D, O extends ItemManagerOptions> {
   private readonly state = new Map<string, LogItem<D>>()
   private readonly removed = new WeakSet<LogItem<D>>()
-  private tid: NodeJS.Timeout
+  private tid: NodeJS.Timeout | null = null
+  private overLimitWarned = false
 
   abstract readonly name: string
   protected abstract itemCallback(msg: ItemMsg<D>): ItemResult<D> | ItemResult<D>[]
@@ -114,8 +115,12 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
       label,
     )
     this.state.set(id, item)
-    if (this.size > this.options.maxCacheSize)
+    if (this.size > this.options.maxCacheSize && !this.overLimitWarned) {
+      this.overLimitWarned = true
       this.logger.warn(`The recommended limit for concurrently used ${this.name} has been exceeded`)
+    } else if (this.size <= this.options.maxCacheSize) {
+      this.overLimitWarned = false
+    }
     this.logFrom(LogType.START, item, [])
     return item
   }
@@ -169,27 +174,31 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
   // autoclear
 
   private checkItem(item: LogItem) {
-    if (!this.size && this.tid) clearTimeout(this.tid)
+    if (!this.size && this.tid) {
+      clearTimeout(this.tid)
+      this.tid = null
+    }
     if (!this.removed.has(item) && !this.tid) this.startTimeoutCheck()
   }
 
   private startTimeoutCheck() {
-    // if (this.tid) clearTimeout(this.tid)
     this.tid = setTimeout(() => {
       this.tid = null
 
+      const expired: LogItem<D>[] = []
       this.state.forEach(item => {
-        if (+item.removeAfter <= Date.now()) {
-          this.removed.add(item)
-          this.delete(item.id)
-          this.logger.warn(
-            `The ${this.name} with the ${item.label ? `${item.label} label` : `${item.id} id`} was deleted after ${prettyTime(
-              1000000 * this.options.maxCacheTime,
-              'ms',
-            )} of inactivity`,
-          )
-        }
+        if (+item.removeAfter <= Date.now()) expired.push(item)
       })
+      for (const item of expired) {
+        this.removed.add(item)
+        this.delete(item.id)
+        this.logger.warn(
+          `The ${this.name} with the ${item.label ? `${item.label} label` : `${item.id} id`} was deleted after ${prettyTime(
+            1000000 * this.options.maxCacheTime,
+            'ms',
+          )} of inactivity`,
+        )
+      }
 
       if (this.size) this.startTimeoutCheck()
     }, this.options.checkCacheTimeout).unref()
