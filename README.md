@@ -1,0 +1,152 @@
+# nlogs
+
+Structured logger for Node.js with category-based filtering, AsyncLocalStorage trace IDs, and built-in timers and counters. Configurable through environment variables - no setup code in most cases.
+
+## Installation
+
+Requires Node.js 20 or newer.
+
+```bash
+npm install nlogs
+```
+
+## Quick start
+
+```ts
+import Logger from 'nlogs'
+
+const logger = new Logger()
+
+logger.info('server started', { port: 3000 })
+logger.error(new Error('boom'))
+```
+
+The `dark` ANSI formatter is used in development and switches to `json` when `NODE_ENV=production`.
+
+## Log levels
+
+```
+trace -> debug -> log -> info -> warn -> error -> fatal
+```
+
+`warn`, `error`, and `fatal` are written to stderr; the rest go to stdout. `fatal` is always emitted regardless of filtering.
+
+Filter at runtime:
+
+```bash
+NLOGS_LEVEL=warn node app.js          # warn, error, fatal
+NLOGS_LEVELS=info,error node app.js   # exact set
+NLOGS_LEVEL=off node app.js           # silence everything except fatal
+```
+
+## Categories
+
+Each logger instance has a category. By default it is derived from the source file path. Pass a class, an explicit string, or `module`/`import.meta` to override:
+
+```ts
+class UserService {}
+const log = new Logger(UserService)
+```
+
+Filter categories with `NLOGS_CATEGORY` (syntax mirrors `debug`: comma-separated entries, leading `-` for negation, `module:category` for module-scoped rules, `*` for everything):
+
+```bash
+NLOGS_CATEGORY="auth, payments, -auth:internal" node app.js
+```
+
+## Trace context
+
+`Logger.run` opens an AsyncLocalStorage context. Every log inside the callback - and any async work it spawns - carries the same `traceId` and shared `details`.
+
+A string argument sets the `traceId` directly:
+
+```ts
+Logger.run(req.headers['x-trace-id'], () => handler(req))
+```
+
+An object argument generates a fresh `traceId` and attaches arbitrary fields to `details`:
+
+```ts
+Logger.run({ userId: '42' }, async () => {
+  logger.info('handling request')
+  await processOrder()
+})
+```
+
+Pass `traceId` explicitly to combine both:
+
+```ts
+Logger.run({ traceId: 'abc-123', userId: '42' }, () => handler())
+```
+
+Nested calls chain: the outer traceId is preserved in `_traceIds`.
+
+## Timers and counters
+
+```ts
+logger.time('db')
+await query()
+logger.timeEnd('db')
+
+const counter = logger.count('events')
+counter.log()    // increments and logs
+counter.log()
+counter.end()    // closes the counter
+```
+
+`logger.time(label)` and `logger.count(label)` return a handle with `.log()` and `.end()` methods. Calling the handle itself (`counter()`) is equivalent to `.end()`. Without a label each call returns a fresh handle. Repeated `logger.count(label)` with the same label keeps incrementing the same counter until `.end()`.
+
+## Formatters
+
+| Value    | When to use                             |
+|----------|-----------------------------------------|
+| `dark`   | Terminal with dark background (default) |
+| `light`  | Terminal with light background          |
+| `string` | Plain text, no ANSI                     |
+| `json`   | One JSON object per line (prod default) |
+
+Override with `NLOGS_FORMATTER`.
+
+## Environment variables
+
+Naming convention: `NLOGS_*` (preferred), `LOGGER_*` (fallback), unprefixed (compatibility with `DEBUG`, `LEVEL`, `CATEGORY`, ...).
+
+| Variable                   | Purpose                                |
+|----------------------------|----------------------------------------|
+| `NLOGS_PROJECT`            | Project name in meta                   |
+| `NLOGS_SERVICE`            | Service name in meta                   |
+| `NLOGS_CATEGORY`           | Category allow/deny list               |
+| `NLOGS_DEBUG`              | Same syntax for `debug`/`trace` levels |
+| `NLOGS_LEVEL`              | Minimum level (or exact level)         |
+| `NLOGS_LEVELS`             | Exact set of allowed levels            |
+| `NLOGS_FORMATTER`          | `json`/`string`/`light`/`dark`         |
+| `NLOGS_STRICT_LEVEL_RULES` | Pre-filter by level (bool)             |
+
+`DEBUG=*` and `NODE_DEBUG=*` are honoured as aliases for `NLOGS_DEBUG`.
+
+## NestJS adapter
+
+```ts
+import { NestjsLogger } from 'nlogs'
+
+const app = await NestFactory.create(AppModule, {
+  logger: new NestjsLogger(),
+})
+```
+
+## Template logger
+
+`TemplateLogger` injects a fixed template applied to every message. Use it as a tagged template literal where each `${...}` can be a plain value or a function that receives the current `LogInfo` and returns the substituted value:
+
+```ts
+import { TemplateLogger } from 'nlogs'
+
+const logger = new TemplateLogger('http')
+logger.template`[${info => info.meta.level}] ${info => info.message}`
+
+logger.info('request received')
+```
+
+## License
+
+MIT - see [LICENSE](./LICENSE).
