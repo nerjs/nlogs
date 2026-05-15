@@ -56,11 +56,17 @@ export class Details {
   }
 
   assign(obj: object) {
-    for (const key in obj) this.details[key] = obj[key]
+    for (const key of Object.keys(obj)) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
+      this.details[key] = obj[key]
+    }
   }
 
   hiddenAssign<D extends IDetails>(obj: D) {
-    for (const key in obj) this.hidden[key] = obj[key]
+    for (const key of Object.keys(obj)) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
+      this.hidden[key] = obj[key]
+    }
   }
 
   setError(error: ErrorDetails) {
@@ -102,9 +108,9 @@ export class Details {
 
   toJSON() {
     const result: Record<string, any> = {}
-    for (const key in this.hidden) result[key] = this.hidden[key]
-    for (const key in this.details) result[key] = this.details[key]
-    for (const key in this.reserved) result[key] = this.reserved[key]
+    for (const key of Object.keys(this.hidden)) result[key] = this.hidden[key]
+    for (const key of Object.keys(this.details)) result[key] = this.details[key]
+    for (const key of Object.keys(this.reserved)) result[key] = this.reserved[key]
     return result
   }
 }

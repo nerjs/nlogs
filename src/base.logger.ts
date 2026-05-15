@@ -58,22 +58,13 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
 
     if (options?.index) this.meta.set('index', options.index)
     if (options?.show != null) this.options.show = options.show
-    ;['traceStore', 'categoriesAllowedList', 'debugAllowedList', 'formatter', 'reader', 'outLogs', 'traceStore', 'options'].forEach(key => {
+    ;['traceStore', 'categoriesAllowedList', 'debugAllowedList', 'formatter', 'reader', 'outLogs', 'options'].forEach(key => {
       Object.defineProperty(this, key, {
         value: this[key],
         enumerable: false,
         configurable: true,
       })
     })
-
-    const categoryName = this.meta.category.replace(/\s+/g, '_')
-    Object.keys(this)
-      .filter(key => typeof this[key] === 'function' && !this[key].name)
-      .forEach(key =>
-        Object.defineProperty(this[key], 'name', {
-          value: `${categoryName}~${key}`,
-        }),
-      )
   }
 
   get staticLogger() {
@@ -82,6 +73,7 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
 
   show(value: boolean) {
     this.options.show = !!value
+    this.invalidateRulesCache()
   }
 
   static moduleResolver: ModResolver = new ModResolver()

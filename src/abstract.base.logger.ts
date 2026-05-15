@@ -96,8 +96,8 @@ export abstract class AbstractBaseLogger<O extends IAbstractBaseLoggerOptions, T
     return this.#loggingShowDebug
   }
 
-  #loggingMainRules: LoggingMainRules
-  private get loggingMainRules() {
+  #loggingMainRules: LoggingMainRules | null = null
+  private get loggingMainRules(): LoggingMainRules {
     if (!this.#loggingMainRules) {
       this.#loggingMainRules = {
         debugLevels: this.options.debugLevels,
@@ -108,8 +108,11 @@ export abstract class AbstractBaseLogger<O extends IAbstractBaseLoggerOptions, T
         showLogger: this.options.show,
       }
     }
-
     return this.#loggingMainRules
+  }
+
+  protected invalidateRulesCache() {
+    this.#loggingMainRules = null
   }
 
   protected preCheckLoggingRules(level: string): boolean {

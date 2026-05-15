@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs'
-import { dirname } from 'path'
+import { dirname, sep } from 'path'
 import { createDebug } from '../helpers/debug'
 import { searchFileRecursive } from '../helpers/fs'
 import { Mod } from './mod'
@@ -79,6 +79,9 @@ export class ModResolver {
   }
 
   private includePath(base: string, pathname: string): boolean {
-    return pathname.includes(base) && !pathname.replace(base, '').includes(NODE_MODULES)
+    if (pathname === base) return true
+    if (!pathname.startsWith(base + sep)) return false
+    const rest = pathname.slice(base.length)
+    return !rest.includes(NODE_MODULES)
   }
 }
