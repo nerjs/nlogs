@@ -68,7 +68,7 @@ An object argument generates a fresh `traceId` and attaches arbitrary fields to 
 
 ```ts
 Logger.run({ userId: '42' }, async () => {
-  logger.info('handling request')   // logs include userId in details
+  logger.info('handling request')
   await processOrder()
 })
 ```
@@ -136,18 +136,16 @@ const app = await NestFactory.create(AppModule, {
 
 ## Template logger
 
-`TemplateLogger` injects a fixed template applied to every message. Use it as a tagged template literal:
+`TemplateLogger` injects a fixed template applied to every message. Use it as a tagged template literal where each `${...}` can be a plain value or a function that receives the current `LogInfo` and returns the substituted value:
 
 ```ts
-import { TemplateLogger, Logger } from 'nlogs'
+import { TemplateLogger } from 'nlogs'
 
 const logger = new TemplateLogger('http')
 logger.template`[${info => info.meta.level}] ${info => info.message}`
 
 logger.info('request received')
 ```
-
-Inside the template, a function receives the current `LogInfo` and returns the substituted value. Plain values are inserted as-is.
 
 ## License
 

@@ -70,11 +70,14 @@ export abstract class ItemsManager<D, O extends ItemManagerOptions> {
   }
 
   delete(id: string) {
-    return this.state.delete(id)
+    const result = this.state.delete(id)
+    if (this.size <= this.options.maxCacheSize) this.overLimitWarned = false
+    return result
   }
 
   clear() {
     this.state.clear()
+    this.overLimitWarned = false
   }
 
   private create(id: string, onLog: LogFn, onEnd: LogFn, label?: string) {

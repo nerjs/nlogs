@@ -31,6 +31,10 @@ import { ModDetails } from '../message/mod.details'
 import { stackToArray } from '../helpers/stack'
 import { ErrorDetails } from '../message/error.details'
 import { LogInfo } from '../message/log.info'
+import { MsgNlogsError } from '../errors/msg.nlogs.error'
+import { createDebug } from '../helpers/debug'
+
+const debug = createDebug('reader')
 
 export class LogReader {
   constructor(private readonly formatter: IFormatter) {}
@@ -55,18 +59,22 @@ export class LogReader {
       if (msg == null) info.push(this.formatter.null(msg, info))
       else if (typeof msg === 'symbol') info.push(this.formatter.symbol(msg, info))
       else if (typeof msg === 'bigint') info.push(this.formatter.bigint(msg, info))
-      else if (isMetaInfo(msg)) {
-        try {
-          this.metaInfo(msg, info)
-        } catch {
-          // swallow bad MetaInfo so a single malformed value never crashes the caller
-        }
-      } else if (msg instanceof Error) this.setError(info, new ErrorDetails(msg))
+      else if (isMetaInfo(msg)) this.safeMetaInfo(msg, info)
+      else if (msg instanceof Error) this.setError(info, new ErrorDetails(msg))
       else if (msg instanceof Date) info.push(this.formatter.date(msg, info))
       else if (Array.isArray(msg)) info.push(this.formatter.array(msg, info))
       else if (msg && typeof msg === 'object') info.details.assign(msg)
       else if (typeof msg === 'string' && !msg) continue
       else info.push(msg)
+    }
+  }
+
+  private safeMetaInfo(msg: MetaInfo, info: LogInfo) {
+    try {
+      this.metaInfo(msg, info)
+    } catch (err) {
+      if (!(err instanceof MsgNlogsError)) throw err
+      debug('skip malformed meta info: %s', err.message)
     }
   }
 

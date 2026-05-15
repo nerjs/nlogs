@@ -73,6 +73,7 @@ export class BaseLogger<T extends IBaseLoggerOptions> extends AbstractBaseLogger
 
   show(value: boolean) {
     this.options.show = !!value
+    this.invalidateRulesCache()
   }
 
   static moduleResolver: ModResolver = new ModResolver()

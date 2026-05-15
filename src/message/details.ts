@@ -16,7 +16,7 @@ interface IDetails {
 }
 
 export class Details {
-  readonly details: Record<string, any> = Object.create(null)
+  readonly details: Record<string, any> = {}
   readonly hidden: Record<string, any> = Object.create(null)
   readonly reserved: IDetails = Object.create(null)
 

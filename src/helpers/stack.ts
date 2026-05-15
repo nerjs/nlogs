@@ -4,18 +4,18 @@ interface StackObj {
 
 const rgx = /(node:)?internal\//
 
-export const STACK_TRACE_LIMIT = 50
+const STACK_TRACE_LIMIT = 50
 
 export const getStackTrace = (fn?: any) => {
   const originalLimit = Error.stackTraceLimit
   const originalPrepare = Error.prepareStackTrace
   const handleObject: StackObj = { stack: '' }
-  Error.stackTraceLimit = STACK_TRACE_LIMIT
-  Error.prepareStackTrace = function (_err: any, _cs: any) {
-    return handleObject.stack
-  }
 
   try {
+    Error.stackTraceLimit = STACK_TRACE_LIMIT
+    Error.prepareStackTrace = function (_err: any, _cs: any) {
+      return handleObject.stack
+    }
     Error.captureStackTrace(handleObject, fn || getStackTrace)
     return handleObject.stack
   } finally {
