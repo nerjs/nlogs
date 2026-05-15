@@ -4,20 +4,24 @@ interface StackObj {
 
 const rgx = /(node:)?internal\//
 
+const STACK_TRACE_LIMIT = 50
+
 export const getStackTrace = (fn?: any) => {
   const originalLimit = Error.stackTraceLimit
   const originalPrepare = Error.prepareStackTrace
   const handleObject: StackObj = { stack: '' }
-  Error.stackTraceLimit = Infinity
-  Error.prepareStackTrace = function (_err: any, _cs: any) {
-    return handleObject.stack
-  }
 
-  Error.captureStackTrace(handleObject, fn || getStackTrace)
-  const stack = handleObject.stack
-  Error.stackTraceLimit = originalLimit
-  Error.prepareStackTrace = originalPrepare
-  return stack
+  try {
+    Error.stackTraceLimit = STACK_TRACE_LIMIT
+    Error.prepareStackTrace = function (_err: any, _cs: any) {
+      return handleObject.stack
+    }
+    Error.captureStackTrace(handleObject, fn || getStackTrace)
+    return handleObject.stack
+  } finally {
+    Error.stackTraceLimit = originalLimit
+    Error.prepareStackTrace = originalPrepare
+  }
 }
 
 export const filterNotInternalStack = (stack: any[]): string[] => {

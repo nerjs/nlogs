@@ -109,8 +109,6 @@ const formatterType: 'json' | 'light' | 'dark' | 'string' =
         ? PRODUCTION_FORMATTER
         : DEFAULT_FORMATTER
 
-// :
-
 const categoriesAllowedList: string | undefined = (
   NLOGS_CATEGORY ||
   LOGGER_CATEGORY ||

@@ -51,8 +51,6 @@ export class TraceStore<T extends object = object> {
       ids.add(state.traceId)
     }
 
-    // ids.delete(this.rootTraceId)
-
     return [...ids].reverse()
   }
 

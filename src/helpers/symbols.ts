@@ -1,6 +1,5 @@
 import { MetaInfo } from './types'
 
-export const IS_META: unique symbol = Symbol('nlogs(is meta)')
 export const IS_META_INFO = Symbol('nlogs(is meta info)')
 export const META_VALUE = Symbol('nlogs(meta value)')
 
@@ -23,7 +22,7 @@ export const TIMESTAMP = Symbol('nlogs(meta:timestamp)')
 // details
 export const DETAILS = Symbol('nlogs(details)')
 export const NO_CONSOLE = Symbol('nlogs(no console)')
-export const HIDDEN_DETAILS = Symbol('nlogs(no console)')
+export const HIDDEN_DETAILS = Symbol('nlogs(hidden details)')
 
 export const DEPTH = Symbol('nlogs(depth)')
 export const SHOW = Symbol('nlogs(show)')
