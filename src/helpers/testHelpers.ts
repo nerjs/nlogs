@@ -62,7 +62,7 @@ const createIvRunner = <O extends OptionsMainKeys, T>(
     if (!Array.isArray(variables)) return iv(key, [variables], defaultValue, defaultName)
     if (!variables.length) throw new Error(`The number of variables to check the key "${key?.toString()}" cannot be 0`)
     const load = createLoader(optionsKey, key)
-    let i = 0
+    const i = 0
 
     if (defaultName || defaultValue !== undefined) {
       it(`from default value (${defaultValue})${
@@ -73,7 +73,7 @@ const createIvRunner = <O extends OptionsMainKeys, T>(
       })
     }
 
-    bodyCheckCallback(load, variables, defaultValue, ++i)
+    bodyCheckCallback(load, variables, defaultValue, i + 1)
 
     if (variables.length === 1 || !archyCheckCallback) return
 
@@ -125,7 +125,7 @@ const createChecker = <O extends OptionsMainKeys, K extends OptionsKeys<O>, T, D
       it(`from ${prettyList(currentVariable)} with exists ${prettyList(variableList)}`, async () => {
         const [env, val] = nextCorrectValue(i++, defaultValue)
 
-        const missingKeys = variableList.map((_, i) => nextCorrectValue(i++, defaultValue))
+        const missingKeys = variableList.map((_, i) => nextCorrectValue(i, defaultValue))
         process.env[currentVariable] = env
         variableList.forEach((vk, i) => {
           process.env[vk] = missingKeys[i][0]
