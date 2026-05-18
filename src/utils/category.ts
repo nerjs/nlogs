@@ -33,7 +33,7 @@ export class Category {
   static category(cat: Cat, mod: IModCat): string {
     if (typeof cat === 'string') return cat
     if (typeof cat === 'function' || cat instanceof Category) return cat.name
-    if (typeof cat !== 'object') throw new CatNlogsError(`Incoreect category name of type ${typeof cat}`)
+    if (typeof cat !== 'object') throw new CatNlogsError(`Incorrect category name of type ${typeof cat}`)
     if ('filename' in cat) return this.relativePath(cat.filename, mod)
     if ('url' in cat) return this.relativePath(cat.url, mod)
     if ('constructor' in cat && cat.constructor !== Object) return this.category(cat.constructor, mod)

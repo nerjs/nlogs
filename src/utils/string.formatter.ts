@@ -96,7 +96,6 @@ export class StringFormatter implements IFormatter {
 
     if (!details.empty)
       messages.push(
-        // ' ',
         formatWithOptions(
           {
             colors: this.colors,
