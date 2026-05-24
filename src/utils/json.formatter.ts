@@ -1,7 +1,11 @@
+import { formatWithOptions } from 'util'
+import { DEFAULT_JSON_MESSAGE_ITEMS_LIMIT } from '../constants'
 import { LogInfo } from '../message/log.info'
 import { IFormatter } from './types'
 
 export class JsonFormatter implements IFormatter {
+  readonly maxArrayLength: number = DEFAULT_JSON_MESSAGE_ITEMS_LIMIT
+
   symbol(value: symbol): string {
     return value.toString()
   }
@@ -16,6 +20,14 @@ export class JsonFormatter implements IFormatter {
 
   array(value: any[]): string {
     return value.toString()
+  }
+  // maxArrayLength caps Array entries but not Map/Set entries, so render
+  // Array.from(...) to make the element limit actually apply to the message.
+  map(value: Map<any, any>): string {
+    return `Map(${value.size}) ${formatWithOptions({ maxArrayLength: this.maxArrayLength }, Array.from(value))}`
+  }
+  set(value: Set<any>): string {
+    return `Set(${value.size}) ${formatWithOptions({ maxArrayLength: this.maxArrayLength }, Array.from(value))}`
   }
   null(value: null | undefined): string {
     return `${value}`
@@ -38,12 +50,23 @@ export class JsonFormatter implements IFormatter {
   }
 
   format(info: LogInfo): string {
-    return JSON.stringify({
-      message: info.message,
-      meta: info.meta,
-      details: info.details.toJSON(),
-      '@timestamp': info.meta.timestamp,
-      '@index': info.index,
-    })
+    return JSON.stringify(
+      {
+        message: info.message,
+        meta: info.meta,
+        details: info.details.toJSON(),
+        '@timestamp': info.meta.timestamp,
+        '@index': info.index,
+      },
+      JsonFormatter.replacer,
+    )
+  }
+
+  // JSON.stringify renders Map/Set as {}. Convert any that reach details
+  // nested inside objects; top-level args already arrive as arrays in _maps/_sets.
+  private static replacer(_key: string, value: any) {
+    if (value instanceof Map) return Array.from(value)
+    if (value instanceof Set) return Array.from(value)
+    return value
   }
 }

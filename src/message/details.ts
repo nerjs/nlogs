@@ -11,6 +11,8 @@ interface IDetails {
   _timeRange?: TimeRange
   _depth?: number
   _module?: ModDetails
+  _maps?: [any, any][][]
+  _sets?: any[][]
 
   [key: string]: any
 }
@@ -48,6 +50,14 @@ export class Details {
     return this.reserved._module
   }
 
+  get maps() {
+    return this.reserved._maps || []
+  }
+
+  get sets() {
+    return this.reserved._sets || []
+  }
+
   get<T = any>(key: string): T | undefined {
     if (key in this.details) return this.details[key]
     if (key in this.hidden) return this.hidden[key]
@@ -82,6 +92,18 @@ export class Details {
     if (!(time instanceof TimeDetails)) return
     if (!this.reserved._times) this.reserved._times = []
     this.reserved._times.push(time)
+  }
+
+  setMap(map: Map<any, any>) {
+    if (!(map instanceof Map)) return
+    if (!this.reserved._maps) this.reserved._maps = []
+    this.reserved._maps.push(Array.from(map))
+  }
+
+  setSet(set: Set<any>) {
+    if (!(set instanceof Set)) return
+    if (!this.reserved._sets) this.reserved._sets = []
+    this.reserved._sets.push(Array.from(set))
   }
 
   setStacktrace(stack: string[], label?: string) {

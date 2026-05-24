@@ -36,6 +36,20 @@ describe('JSON formatter', () => {
       expect(formatter.array([1, 2, 3])).toEqual(expect.any(String))
     })
 
+    it('map', () => {
+      expect(formatter.map(new Map([['a', 1]]))).toEqual(expect.any(String))
+    })
+
+    it('set', () => {
+      expect(formatter.set(new Set([1, 2, 3]))).toEqual(expect.any(String))
+    })
+
+    it('map and set limit elements in the message', () => {
+      const entries = Array.from({ length: formatter.maxArrayLength + 5 }, (_, i): [number, number] => [i, i])
+      expect(formatter.map(new Map(entries))).toMatch('more items')
+      expect(formatter.set(new Set(entries.map(([k]) => k)))).toMatch('more items')
+    })
+
     it('null', () => {
       expect(formatter.null(null)).toEqual(expect.any(String))
       expect(formatter.null(undefined)).toEqual(expect.any(String))
@@ -86,6 +100,27 @@ describe('JSON formatter', () => {
       const info = reader.read(meta, [StaticLogger.index('current index')])
       const obj = JSON.parse(formatter.format(info))
       expect(obj['@index']).toEqual(info.index)
+    })
+
+    it('nested Map and Set in details are serialized, not lost as {}', () => {
+      const info = reader.read(meta, [
+        {
+          data: new Map<any, any>([
+            ['a', 1],
+            ['b', 2],
+          ]),
+          tags: new Set([1, 2, 3]),
+          count: 5,
+        },
+      ])
+      const obj = JSON.parse(formatter.format(info))
+
+      expect(obj.details.data).toEqual([
+        ['a', 1],
+        ['b', 2],
+      ])
+      expect(obj.details.tags).toEqual([1, 2, 3])
+      expect(obj.details.count).toEqual(5)
     })
   })
 })

@@ -68,6 +68,30 @@ describe('log reader', () => {
 
       expect(info.details.details).toEqual(expect.objectContaining(obj))
     })
+
+    it('Map value', () => {
+      const map = new Map<any, any>([
+        ['a', 1],
+        ['b', 2],
+      ])
+      const info = reader.read(meta, [map])
+      const str = stringFormatter.messages([stringFormatter.map(map)])
+
+      expect(info.message).toMatch(str)
+      expect(info.details.maps[0]).toEqual([
+        ['a', 1],
+        ['b', 2],
+      ])
+    })
+
+    it('Set value', () => {
+      const set = new Set([1, 2, 3])
+      const info = reader.read(meta, [set])
+      const str = stringFormatter.messages([stringFormatter.set(set)])
+
+      expect(info.message).toMatch(str)
+      expect(info.details.sets[0]).toEqual([1, 2, 3])
+    })
   })
 
   describe('error message', () => {

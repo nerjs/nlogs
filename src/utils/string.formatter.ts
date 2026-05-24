@@ -17,6 +17,12 @@ export class StringFormatter implements IFormatter {
   array(value: any[]) {
     return value
   }
+  map(value: Map<any, any>) {
+    return value
+  }
+  set(value: Set<any>) {
+    return value
+  }
   null(value: null | undefined) {
     return value
   }
