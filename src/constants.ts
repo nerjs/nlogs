@@ -6,6 +6,7 @@ export const DEFAULT_SERVICE = ''
 export const DEFAULT_CATEGORY = 'default'
 export const PRODUCTION_FORMATTER = 'json'
 export const DEFAULT_FORMATTER = 'dark'
+export const DEFAULT_JSON_MESSAGE_ITEMS_LIMIT = 10
 export const DEFAULT_MAX_CACHE_TIME_MS = 1000 * 60 * 60 * 24
 export const MIN_MAX_CACHE_TIME_MS = 1000 * 60 * 60 * 1
 export const DEFAULT_CHECK_CACHE_TIMEOUT_MS = 1000 * 10

@@ -63,6 +63,8 @@ export class LogReader {
       else if (msg instanceof Error) this.setError(info, new ErrorDetails(msg))
       else if (msg instanceof Date) info.push(this.formatter.date(msg, info))
       else if (Array.isArray(msg)) info.push(this.formatter.array(msg, info))
+      else if (msg instanceof Map) this.setMap(info, msg)
+      else if (msg instanceof Set) this.setSet(info, msg)
       else if (msg && typeof msg === 'object') info.details.assign(msg)
       else if (typeof msg === 'string' && !msg) continue
       else info.push(msg)
@@ -182,5 +184,15 @@ export class LogReader {
       info.details.setError(value)
       info.entity('error', value)
     }
+  }
+
+  private setMap(info: LogInfo, value: Map<any, any>) {
+    info.details.setMap(value)
+    info.push(this.formatter.map(value, info))
+  }
+
+  private setSet(info: LogInfo, value: Set<any>) {
+    info.details.setSet(value)
+    info.push(this.formatter.set(value, info))
   }
 }
