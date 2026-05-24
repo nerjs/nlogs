@@ -69,6 +69,59 @@ describe('details', () => {
     })
   })
 
+  describe('maps', () => {
+    it('empty list maps', () => {
+      expect(details.maps).toEqual(expect.any(Array))
+      expect(details.maps.length).toEqual(0)
+    })
+
+    it('incorrect type', () => {
+      // @ts-ignore
+      details.setMap({ a: 1 })
+      expect(details.maps.length).toEqual(0)
+    })
+
+    it('stores map as entry pairs', () => {
+      const map = new Map<any, any>([
+        ['a', 1],
+        ['b', 2],
+      ])
+      details.setMap(map)
+
+      expect(details.reserved._maps).toEqual([
+        [
+          ['a', 1],
+          ['b', 2],
+        ],
+      ])
+      expect(details.maps[0]).toEqual([
+        ['a', 1],
+        ['b', 2],
+      ])
+    })
+  })
+
+  describe('sets', () => {
+    it('empty list sets', () => {
+      expect(details.sets).toEqual(expect.any(Array))
+      expect(details.sets.length).toEqual(0)
+    })
+
+    it('incorrect type', () => {
+      // @ts-ignore
+      details.setSet([1, 2, 3])
+      expect(details.sets.length).toEqual(0)
+    })
+
+    it('stores set as value array', () => {
+      const set = new Set([1, 2, 3])
+      details.setSet(set)
+
+      expect(details.reserved._sets).toEqual([[1, 2, 3]])
+      expect(details.sets[0]).toEqual([1, 2, 3])
+    })
+  })
+
   describe('stacktraces', () => {
     it('empty list stacktraces', () => {
       expect(details.stacks).toEqual(expect.any(Array))

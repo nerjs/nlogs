@@ -11,6 +11,8 @@ export interface IFormatter {
   bigint(value: bigint, info: LogInfo): string | bigint
   date(value: Date, info: LogInfo): string | Date
   array(value: any[], info: LogInfo): string | any[]
+  map(value: Map<any, any>, info: LogInfo): string | Map<any, any>
+  set(value: Set<any>, info: LogInfo): string | Set<any>
   null(value: null | undefined, info: LogInfo): string | null | undefined
 }
 

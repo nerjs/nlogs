@@ -113,6 +113,21 @@ describe('String formatter', () => {
     })
   })
 
+  describe('Map and Set', () => {
+    it('returns the raw value so formatWithOptions renders it', () => {
+      const map = new Map([['a', 1]])
+      const set = new Set([1, 2])
+      expect(formatter.map(map)).toBe(map)
+      expect(formatter.set(set)).toBe(set)
+    })
+
+    it('renders natively in the output', () => {
+      const str = format([new Map([['a', 1]]), new Set([1, 2])])
+      expect(str).toMatch('Map(1)')
+      expect(str).toMatch('Set(2)')
+    })
+  })
+
   describe('stacktraces', () => {
     it('errors traces', () => {
       const err = new Error('qwerty')
