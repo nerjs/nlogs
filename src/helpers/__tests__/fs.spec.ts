@@ -60,7 +60,7 @@ describe('tests for fs helpers', () => {
           try {
             if ((await stat(join(process.env.HOME, f))).isDirectory()) return f
           } catch (err) {
-            if (err.code === 'ENOENT') continue
+            if ((err as NodeJS.ErrnoException).code === 'ENOENT') continue
             throw err
           }
         }

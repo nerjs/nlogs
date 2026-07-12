@@ -6,7 +6,9 @@
     "lib": ["es6", "es2022", "esnext.asynciterable"],
 
     "outDir": "./dist",
+    "rootDir": "./src",
     "moduleResolution": "Node",
+    "ignoreDeprecations": "6.0",
     "baseUrl": "./src",
     "paths": {
       "src": ["./dist/"]
