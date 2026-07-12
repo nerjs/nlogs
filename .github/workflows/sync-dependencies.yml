@@ -1,56 +1,25 @@
-name: "SYNC: dependencies with master"
+name: "SYNC: dependencies <- master"
 
 on:
   push:
-    branches:
+    branches: 
       - master
+  workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: sync-dependencies
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out dependencies
-        uses: actions/checkout@v6
+      - uses: voidmason/branch-sync-action@v1
         with:
-          ref: dependencies
-          fetch-depth: 0
-          token: ${{ secrets.PUBLISH_TOKEN }}
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Try merge master
-        id: merge
-        run: |
-          git fetch origin master
-          if git merge origin/master -m "Sync master to dependencies [skip-CI]"; then
-            echo "result=success" >> $GITHUB_OUTPUT
-          else
-            git merge --abort
-            echo "result=conflict" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Push if no conflicts
-        if: steps.merge.outputs.result == 'success'
-        run: git push origin dependencies
-
-      - name: Create PR if conflicts
-        if: steps.merge.outputs.result == 'conflict'
-        env:
-          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-        run: |
-          existing=$(gh pr list --base dependencies --head master --json number --jq '.[0].number')
-          if [ -n "$existing" ]; then
-            echo "Sync PR #$existing already exists"
-          else
-            gh pr create --base dependencies --head master \
-              --title "Sync: merge master into dependencies (conflicts)" \
-              --body "Merge conflicts. Resolve manually."
-          fi
+          token: ${{ secrets.RELEASE_TOKEN }}
+          base: master
+          head: dependencies
