@@ -89,7 +89,7 @@ const createIvRunner = <O extends OptionsMainKeys, T>(
   return iv
 }
 
-const createChecker = <O extends OptionsMainKeys, K extends OptionsKeys<O>, T, D extends T | undefined>(
+const createChecker = <O extends OptionsMainKeys, T, D extends T | undefined>(
   optionsKey: O,
   nextCorrectValue: (i: number, defaultValue?: D) => [env: string, val: T],
   nextIncorrectCorrectValue: (i: number, defaultValue?: D) => [env: string, val: T],
@@ -98,7 +98,7 @@ const createChecker = <O extends OptionsMainKeys, K extends OptionsKeys<O>, T, D
 ) =>
   createIvRunner(
     optionsKey,
-    (load: LoadFn<O, K>, variables: IEnv[], defaultValue: D | undefined, pi: number) => {
+    (load: LoadFn<O, OptionsKeys<O>>, variables: IEnv[], defaultValue: D | undefined, pi: number) => {
       let i = pi * 1000
 
       for (const variableName of variables) {
@@ -119,7 +119,7 @@ const createChecker = <O extends OptionsMainKeys, K extends OptionsKeys<O>, T, D
         equal(value, val)
       })
     },
-    (load: LoadFn<O, K>, currentVariable: IEnv, variableList: IEnv[], defaultValue: D | undefined, pi: number) => {
+    (load: LoadFn<O, OptionsKeys<O>>, currentVariable: IEnv, variableList: IEnv[], defaultValue: D | undefined, pi: number) => {
       let i = pi * 1000
 
       it(`from ${prettyList(currentVariable)} with exists ${prettyList(variableList)}`, async () => {

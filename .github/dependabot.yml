@@ -18,10 +18,15 @@ updates:
     target-branch: "dependencies"
     open-pull-requests-limit: 5
     groups:
+      # ts-jest peers on both typescript and jest, so they have to move together
       typescript:
         patterns:
           - "typescript"
           - "@types/node"
+          - "jest"
+          - "jest-watch-typeahead"
+          - "ts-jest"
+          - "@types/jest"
 
       eslint:
         patterns:
@@ -33,13 +38,6 @@ updates:
           - "eslint-plugin-prettier"
           - "prettier"
           - "typescript-eslint"
-
-      jest:
-        patterns:
-          - "jest"
-          - "jest-watch-typeahead"
-          - "ts-jest"
-          - "@types/jest"
 
       debug:
         patterns:

@@ -22,6 +22,7 @@ const config = tseslint.config(
     rules: {
       'no-constant-condition': 'off',
       'no-case-declarations': 'off',
+      'no-useless-assignment': 'off',
       '@typescript-eslint/interface-name-prefix': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',

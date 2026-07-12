@@ -10,7 +10,7 @@ export const exists = (pathname: string): null | Stats => {
   try {
     return statSync(pathname)
   } catch (err) {
-    if (err?.code === 'ENOENT') return null
+    if ((err as NodeJS.ErrnoException)?.code === 'ENOENT') return null
     throw err
   }
 }
