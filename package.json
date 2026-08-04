@@ -44,7 +44,7 @@
     "typescript-eslint": "8.65.0"
   },
   "dependencies": {
-    "@types/node": "26.1.1",
+    "@types/node": "26.1.2",
     "@types/pretty-time": "1.1.5",
     "debug": "4.4.3",
     "pretty-time": "1.1.0"
